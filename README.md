@@ -1,5 +1,5 @@
-localizedphysics
 a (semi)functional version of The Gravity Hull editor tool by superllama for Garry's Mod 13
+
 Current Issues that need a'fixing:
 
     -Thirdperson breaks with WAC
