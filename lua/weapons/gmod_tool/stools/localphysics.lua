@@ -28,7 +28,7 @@ function TOOL.BuildCPanel(cp)
 	cp:AddControl("Header",{Text = "#Tool.localphysics.name", Description = "#Tool.localphysics.desc"})
 	cp:AddControl("Slider",{Label = "Vertical Protrusion Factor", Description = "The minimum distance from the floor that walls or a ceiling is required to keep entities inside the hull.",
 	                        Type = "Integer", Min = 0, Max = 300, Command = "localphysics_floordist"})
-	cp:AddControl("Checkbox",{Label = "Hit Surface Defines Floor", Description = "If checked, the surface shot by the tool will determine which way "up" is. Otherwise it counts up as up, meaning your camera will be straight on a diagonal surface.",
+	cp:AddControl("Checkbox",{Label = "Hit Surface Defines Floor", Description = "If checked, the surface shot by the tool will determine which way 'up' is. Otherwise it counts up as up, meaning your camera will be straight on a diagonal surface.",
 							  Command = "localphysics_gravnormal"})
 	cp:AddControl("Slider",{Label = "Gravity Percentage", Description = "The percentage of normal gravity to apply to players and objects inside. Works with players and other objects! Works for NPCs.",
 							Type = "Integer", Min = 0, Max = 500, Command = "localphysics_gravity"})
