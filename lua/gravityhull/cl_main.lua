@@ -28,7 +28,7 @@ local draw_with_effect = kv_swap{
 	"gmod_turret",
 }
 ------------------------------------------------------------------------------------------
--- Name: AddPropIds
+-- Name: AddPropId
 -- Desc: Called when a contents usermessage is recieved; waits until the entity indices are valid
 ------------------------------------------------------------------------------------------
 local function AddPropIds(tab,enti,shipi,ghosti,times)
