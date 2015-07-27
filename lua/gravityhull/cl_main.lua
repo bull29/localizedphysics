@@ -178,10 +178,6 @@ GH.DoCalcView = function(ply,pos,ang,fov,nope)
 		if data && IsValid(data.S) && IsValid(data.G) then
 			local tpos,tang = WorldToLocal(view.origin,view.angles,data.G.RealPos or data.G:GetRealPos(),data.G.RealAng or data.G:GetRealAngles())
 			view.origin,view.angles = LocalToWorld(tpos,tang,data.S:GetPos(true),data.S:GetAngles())
-			if view.vm_origin and view.vm_angles then
-				local vmpos,vmang = WorldToLocal(view.vm_origin,view.vm_angles,data.G.RealPos or data.G:GetRealPos(),data.G.RealAng or data.G:GetRealAngles())
-				view.vm_origin, view.vm_angles = LocalToWorld(vmpos,vmang,data.S:GetPos(true),data.S:GetAngles())
-			end
 			apply = true
 		end
 	end,ErrorNoHalt)
@@ -194,6 +190,31 @@ GH.DoCalcView = function(ply,pos,ang,fov,nope)
 	end
 end
 hook.Add("CalcView","SLShipView",GH.DoCalcView)
+
+hook.Add("CalcViewModelView", "SLViewModels", function(wep, vm, oldPos, oldAng, pos, ang, dont)
+	local ply = LocalPlayer()
+	local apply = false
+	local view = {origin = pos, angles = ang}
+	local p,a
+	xpcall(function()
+		local data = GH.SHIPCONTENTS[ply]
+		if ply:InVehicle() && IsValid(ply:GetVehicle()) then
+			data = GH.SHIPCONTENTS[ply:GetVehicle()]
+		end
+		if IsValid(SLViewEnt) then
+			data = GH.SHIPCONTENTS[SLViewEnt]
+		end
+		if data && IsValid(data.S) && IsValid(data.G) then
+			local vmpos,vmang = WorldToLocal(pos,ang,data.G.RealPos or data.G:GetRealPos(),data.G.RealAng or data.G:GetRealAngles())
+			p, a = LocalToWorld(vmpos,vmang,data.S:GetPos(true),data.S:GetAngles())
+			apply = true
+		end
+	end,ErrorNoHalt)
+	if apply then
+		return p,a
+	end
+end)
+
 local cvhook = "SLShipView"
 ------------------------------------------------------------------------------------------
 -- Name: ghd_fixcamera
