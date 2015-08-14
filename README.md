@@ -3,13 +3,27 @@ a (semi)functional version of The Gravity Hull editor tool by superllama for Gar
 Current Issues that need a'fixing:
 
     -Thirdperson breaks with WAC
-    
-    -Bringing a vehicle with wheels near a hull'd prop breaks the world (Props and objects bounce up and down)
-    
-    -Viewmodels refuse to render
+
+    -Can't inflict damage on entities using bullet-based sweps
     
     -Players cannot be shot from inside or outside a hull
+
+    -Players cannot inflict damage upon each other in a hull
     
-    -The enitre tool is co-dependent on the obsolete/experimental map repeat function/feature 
+-The enitre tool is co-dependent on the 
+obsolete/experimental map repeat function/feature 
     
   -Inform me about any more issues I missed
+
+
+
+Fixed issues
+
+-Viewmodels refuse to render
+Thanks to Z0MB1N3
+
+-Bringing a vehicle with wheels near a hull'd prop breaks the world (Props and objects bounce up and down)
+ Fixed due to unknown reason (New Update possibly?)
+
+-Breaks with Falco's prop protection
+Fixed thanks to the great Falco himself
