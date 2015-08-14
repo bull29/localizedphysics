@@ -10,8 +10,7 @@ Current Issues that need a'fixing:
 
     -Players cannot inflict damage upon each other in a hull
     
-    -The enitre tool is co-dependent on the 
-obsolete/experimental map repeat function/feature 
+    -The enitre tool is co-dependent on the obsolete/experimental map repeat function/feature 
 
     -exiting a hull will teleport you to a random position (can't narrow down what triggers this)
 
