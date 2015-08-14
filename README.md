@@ -10,10 +10,18 @@ Current Issues that need a'fixing:
 
     -Players cannot inflict damage upon each other in a hull
     
--The enitre tool is co-dependent on the 
+    -The enitre tool is co-dependent on the 
 obsolete/experimental map repeat function/feature 
+
+    -exiting a hull will teleport you to a random position (can't narrow down what triggers this)
+
+    -Vehicles don't work properly in hulls
+
+    -Can't get inside of seats whilst in hulls
+
+    -Getting a inside a seat inside a hull derenders all props and entities
     
-  -Inform me about any more issues I missed
+    -Inform me about any more issues I missed
 
 
 
