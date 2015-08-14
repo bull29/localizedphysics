@@ -32,11 +32,11 @@ Current Issues that need a'fixing:
 
 Fixed issues
 
--Viewmodels refuse to render
+    -Viewmodels refuse to render
 Thanks to Z0MB1N3
 
--Bringing a vehicle with wheels near a hull'd prop breaks the world (Props and objects bounce up and down)
+    -Bringing a vehicle with wheels near a hull'd prop breaks the world (Props and objects bounce up and down)
  Fixed due to unknown reason (New Update possibly?)
 
--Breaks with Falco's prop protection
+    -Breaks with Falco's prop protection
 Fixed thanks to the great Falco himself
