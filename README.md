@@ -16,7 +16,7 @@ Current Issues that need a'fixing:
 
     -Vehicles don't work properly in a hull
      
-    -Ragdolls simply don't worknow
+    -Ragdolls simply don't work
 
     -Gravity percentage slider seems to be broken for world entities such as players
 
