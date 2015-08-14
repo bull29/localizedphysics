@@ -14,7 +14,13 @@ Current Issues that need a'fixing:
 
     -exiting a hull will teleport you to a random position (can't narrow down what triggers this)
 
-    -Vehicles don't work properly in hulls
+    -Vehicles don't work properly in a hull
+     
+    -Ragdolls simply don't worknow
+
+    -Gravity percentage slider seems to be broken for world entities such as players
+
+    -You can pick up func_rotating_doors with a hull, it'll duplicate and displace itself in the skybox
 
     -Can't get inside of seats whilst in hulls
 
