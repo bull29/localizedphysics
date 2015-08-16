@@ -23,7 +23,7 @@ usermessage.Hook("maprepeat_num",function(um)
 end)
 usermessage.Hook("maprepeat_rgen",function(um)
 	local k = um:ReadShort()
-	if IsValid(Entity(k)) then k = Entity(k) end
+	if Entity(k):IsValid() then k = Entity(k) end
 	local rg = {}
 	local sz = um:ReadShort()
 	rg.r = um:ReadShort()
@@ -39,9 +39,9 @@ end)
 usermessage.Hook("maprepeat_cell",function(um)
 	if !MapRepeat then return end
 	local e = um:ReadShort()
-	if IsValid(Entity(e)) then e = Entity(e) end
+	if Entity(e):IsValid() then e = Entity(e) end
 	local c = um:ReadString()
-	print(tostring(e) .. "->CELL: " .. c)
+	--print(tostring(e) .. "->CELL: " .. c)
 	if type(MapRepeat.CelledEnts[e]) == 'string' then
 		MapRepeat.Cells[MapRepeat.CelledEnts[e]][e] = nil
 	end
@@ -52,7 +52,7 @@ end)
 usermessage.Hook("maprepeat_setcell",function(um)
 	if !MapRepeat then return end
 	local e = um:ReadShort()
-	if IsValid(Entity(e)) then e = Entity(e) end
+	if Entity(e):IsValid() then e = Entity(e) end
 	local c = um:ReadString()
 	if type(MapRepeat.CelledEnts[e]) == 'string' then
 		MapRepeat.Cells[MapRepeat.CelledEnts[e]][e] = nil
@@ -76,12 +76,9 @@ function MapRepeat.DrawCell(x,y,z)
 	local w = (r or 0) - (l or 0)
 	local h = (b or 0) - (t or 0)
 	local v = (u or 0) - (d or 0)
-	if s.tilemap == 1 then
-		local e = Entity(0)
-		e:SetRenderOrigin(Vector(x*w,y*h,z*v))
-		e:DrawModel()
-		--e:SetRenderOrigin(vector_origin)
-	end
+	if s.tilemap == 1 then -- 
+		
+	end 
 	local pl = LocalPlayer()
 	if !pl.Cell then 
 		pl.Cell = Vector(0,0,0) 
@@ -93,7 +90,7 @@ function MapRepeat.DrawCell(x,y,z)
 			MapRepeat.GenCell(c)
 		end
 		for k,v in pairs(MapRepeat.Cells[c]) do
-			if tonumber(k) and IsValid(Entity(tonumber(k))) then
+			if tonumber(k) and Entity(tonumber(k)):IsValid() then
 				MapRepeat.Cells[c][Entity(tonumber(k))] = v
 			end
 			if k == NULL then
@@ -101,11 +98,11 @@ function MapRepeat.DrawCell(x,y,z)
 			end
 		end
 		for k,v in pairs(MapRepeat.Cells[c]) do
-			if tonumber(k) == 'number' and IsValid(Entity(tonumber(k))) then
+			if tonumber(k) == 'number' and Entity(tonumber(k)):IsValid() then
 				MapRepeat.Cells[c][k] = nil
 				k = Entity(k)
 			end
-			if type(k) == 'Entity' and IsValid(k) and v then
+			if type(k) == 'Entity' and k:IsValid() and v then
 				(k.Draw or k.DrawModel)(k)
 				if k.MRNoDraw then
 					k:SetNoDraw(false)
@@ -163,7 +160,13 @@ MapRepeat.AddHook("PostDrawOpaqueRenderables","SL_MRDraw",function()
 		end
 		return
 	end
-	local l,r,t,b,u,d = s.left, s.right, s.top, s.bottom, s.up, s.down
+
+	local l = s.left
+	local r = s.right
+	local t = s.top
+	local b = s.bottom
+	local u = s.up
+	local s = s.down
 	--sides
 	if l then MapRepeat.DrawCell(-1,0,0) end
 	if r then MapRepeat.DrawCell(1,0,0) end
