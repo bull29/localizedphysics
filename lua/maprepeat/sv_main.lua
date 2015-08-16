@@ -50,9 +50,11 @@ end
 function MapRepeat.SetRGen(ent,tbl)
 	MapRepeat.RGen[ent] = tbl
 	maprepeat_rgen(ent,tbl)
+	--print("Setting RGen")
 end
 function MapRepeat.AddCell(ent,cell)
 	if ent == NULL then return end
+	--print("Adding a cell")
 	MapRepeat.Cells[cell] = MapRepeat.Cells[cell] or {}
 	MapRepeat.Cells[cell][ent] = true
 	ent.Cells = ent.Cells or {}
@@ -185,21 +187,25 @@ hook.Add("InitPostEntity","MR_IPE",function()
 		end)
 	else
 		MapRepeat.GenCell("0 0 0")
+		--print("Generating cell 0,0,0")
 	end
 end)
-MapRepeat.AddHook("EntityKeyValue","MR_KVH",function(ent,k,v)
+hook.Add("EntityKeyValue","MR_KVH",function(ent,k,v)
 	local rep = {}
+	--print("Called EntityKeySetValue")
 	if string.sub(k,1,4) == 'cell' then
-		local i = string.sub(k,5)
+		local i = string.sub(k,5) 
 		local c = v
 		if string.find(c,'?') or string.find(c,'%%') then 
 			local ct = MapRepeat.CellToArray(c)
 			rep[#rep+1] = ct
 		else
 			MapRepeat.AddCell(ent,c)
+			--print("Adding a cell")
 		end
-	end
+	end 
 	if #rep > 0 then
+		--print("Setting RGen 1")
 		MapRepeat.SetRGen(ent,rep)
 	end
 end)

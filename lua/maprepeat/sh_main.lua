@@ -11,8 +11,14 @@ function MapRepeat.CellToArray(cell)
 	return c
 end
 local srv_genned = {}
-function MapRepeat.GenCell(cell)
-	if !cell then return end
+function MapRepeat.GenCell(cell) -- GENCELL
+	--print("Generating cell")
+	
+	if !cell then 
+		--print("Cell invalid!")
+		return
+	end
+	
 	local c = MapRepeat.CellToArray(cell)
 	MapRepeat.Cells[cell] = MapRepeat.Cells[cell] or {}
 	if MapRepeat.Cells[cell].gen then return end
@@ -42,6 +48,7 @@ function MapRepeat.GenCell(cell)
 					((v[2] == c[2]) or (v[2] == '?') or p[2]) and
 					((v[3] == c[3]) or (v[3] == '?') or p[3]) then
 					if send then
+						--print("Adding cell")
 						MapRepeat.AddCell(e,cell)
 					else
 						MapRepeat.Cells[cell][e] = true
@@ -67,15 +74,15 @@ function MapRepeat.InCell(e,cell)
 end
 function MapRepeat.CellToPos(_pos,cell)
 	local pos = _pos
-	local c = MapRepeat.CellToArray(cell)
-	if !c then return pos end
+	local c2 = MapRepeat.CellToArray(cell)
+	if !c2 then return pos end
 	local s = MapRepeat.Sync
 	local cx = (s.right or 0) - (s.left or 0)
 	local cy = (s.bottom or 0) - (s.top or 0)
 	local cz = (s.up or 0) - (s.down or 0)
-	pos.x = pos.x + (cx * (tonumber(c[1]) or 0))
-	pos.y = pos.y + (cy * (tonumber(c[2]) or 0))
-	pos.z = pos.z + (cz * (tonumber(c[3]) or 0))
+	pos.x = pos.x + (cx * (tonumber(c2[1]) or 0))
+	pos.y = pos.y + (cy * (tonumber(c2[2]) or 0))
+	pos.z = pos.z + (cz * (tonumber(c2[3]) or 0))
 	return pos
 end
 function MapRepeat.PosToCell(_pos,_pos2)
@@ -114,9 +121,9 @@ function util.TraceLine(_tr)
 	end
 	local tr,cell = _tr,nil
 	local s = MapRepeat.Sync
-	cell,tr.start,tr.endpos = MapRepeat.PosToCell(tr.start,tr.endpos)
+	cell = MapRepeat.PosToCell(tr.start,tr.endpos)
 	for _,e in pairs(ents.GetAll()) do
-		if !MapRepeat.InCell(e,cell) && (CLIENT or e:GetMoveType() != MOVETYPE_NONE) then
+		if !MapRepeat.InCell(e,cell) and (CLIENT or e:GetMoveType() != MOVETYPE_NONE) then
 			if type(tr.filter) != 'table' then tr.filter = {tr.filter} end
 			tr.filter[#tr.filter+1] = e
 		end
