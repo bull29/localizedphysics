@@ -147,6 +147,9 @@ end
 concommand.Add("sl_mr_gencell",function(p,c,a)
 	MapRepeat.GenCell(a[1])
 end)
+concommand.Add("sl_mr_gotocell",function(ply,command,args)
+	MapRepeat.SetCell(ply,args[1])
+end)
 MapRepeat.AddHook("ShouldCollide","SL_MRCollide",function(e1,e2)
 	if e1.InShip or e2.InShip then return end
 	if !MapRepeat.SameCell(e1,e2) then return false end
