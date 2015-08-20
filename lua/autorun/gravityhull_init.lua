@@ -1,5 +1,5 @@
 //NOTE: MAP REPEATER IS AN UNSTABLE PROTOTYPE. USE AT YOUR OWN RISK BY MAKING TRUE THE FOLLOWING LINE:
-AllowMapRepeat = false
+AllowMapRepeat = true
 
 
 include("gravityhull/init.lua")
