@@ -166,7 +166,7 @@ MapRepeat.AddHook("PostDrawOpaqueRenderables","SL_MRDraw",function()
 	local t = s.top
 	local b = s.bottom
 	local u = s.up
-	local s = s.down
+	local d = s.down
 	--sides
 	if l then MapRepeat.DrawCell(-1,0,0) end
 	if r then MapRepeat.DrawCell(1,0,0) end
