@@ -142,13 +142,13 @@ local cvt = CreateClientConVar("ghd_cameramethod",0,true,false)
 -- Name: DoCalcView
 -- Desc: The magic calcview hook.
 ------------------------------------------------------------------------------------------
-GH.DoCalcView = function(ply,pos,ang,fov,nope)
+GH.DoCalcView = function(ply,pos,ang,fov,nearz,farz,nope)
 	local apply = false
 	local method = cvt:GetInt()
 	local view
 	if method == 0 then
 		if nope == "SLShipView" then return end
-		view = hook.Call("CalcView",GAMEMODE,ply,pos,ang,fov,"SLShipView")
+		view = hook.Call("CalcView",GAMEMODE,ply,pos,ang,fov,nearz,farz,"SLShipView")
 	elseif method == 1 then 
 		view = {origin = pos, angles = ang}
 	end
@@ -183,9 +183,9 @@ GH.DoCalcView = function(ply,pos,ang,fov,nope)
 	end,ErrorNoHalt)
 	if apply then
 		if method == 0 then
-			return view//GAMEMODE:CalcView(ply,pos,ang,fov)
+			return view
 		elseif method == 1 then
-			return GAMEMODE:CalcView(ply,view.origin,view.angles,fov)
+			return GAMEMODE:CalcView(ply,view.origin,view.angles,fov,nearz,farz)
 		end
 	end
 end
