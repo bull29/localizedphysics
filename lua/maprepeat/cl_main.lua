@@ -22,11 +22,11 @@ net.Recieve("maprepeat_num",function(um)
 	MapRepeat.Sync[k] = um:ReadFloat()
 end)
 net.Recieve("maprepeat_rgen",function(um)
-	local k = um:ReadShort()
+	local k = um:ReadInt(16)
 	if Entity(k):IsValid() then k = Entity(k) end
 	local rg = {}
-	local sz = um:ReadShort()
-	rg.r = um:ReadShort()
+	local sz = um:ReadInt(16)
+	rg.r = um:ReadInt(16)
 	local i
 	for i=1,sz do
 		rg[i] = {}
@@ -38,7 +38,7 @@ net.Recieve("maprepeat_rgen",function(um)
 end)
 net.Recieve("maprepeat_cell",function(um)
 	if !MapRepeat then return end
-	local e = um:ReadShort()
+	local e = um:ReadInt(16)
 	if Entity(e):IsValid() then e = Entity(e) end
 	local c = um:ReadString()
 	--print(tostring(e) .. "->CELL: " .. c)
@@ -51,7 +51,7 @@ net.Recieve("maprepeat_cell",function(um)
 end)
 net.Recieve("maprepeat_setcell",function(um)
 	if !MapRepeat then return end
-	local e = um:ReadShort()
+	local e = um:ReadInt(16)
 	if Entity(e):IsValid() then e = Entity(e) end
 	local c = um:ReadString()
 	if type(MapRepeat.CelledEnts[e]) == 'string' then
