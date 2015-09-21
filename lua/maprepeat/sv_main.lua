@@ -1,30 +1,38 @@
+function GM:Initialize()
+	util.AddNetworkString("maprepeat_num")
+	util.AddNetworkString("maprepeat_rgen")
+	util.AddNetworkString("maprepeat_setcell")
+	util.AddNetworkString("maprepeat_cell")
+	util.AddNetworkString("maprepeat_install")
+	util.AddNetworkString("maprepeat_uninstall")
+end
 local function maprepeat_num(k,v,p)
-	umsg.Start("maprepeat_num",p)
-		umsg.String(k)
-		umsg.Float(v)
-	umsg.End()
+	net.Start("maprepeat_num")
+		net.WriteString(k)
+		net.WriteFloat(v)
+	net.Send(p)
 end
 local function maprepeat_rgen(e,t,p)
 	if !e or e == NULL or !IsEntity(e) then return end
-	umsg.Start("maprepeat_rgen",p)
-		umsg.Short(e:EntIndex())
-		umsg.Short(#t)
-		umsg.Short(t.r or 0)
+	net.Start("maprepeat_rgen")
+		net.WriteInt(e:EntIndex(), 16)
+		net.WriteInt(#t, 16)
+		net.WriteInt(t.r or 0, 16)
 		for k,v in pairs(t) do
 			if type(v) == 'table' then
-				umsg.String(v[1] or "?")
-				umsg.String(v[2] or "?")
-				umsg.String(v[3] or "?")
+				net.WriteString(v[1] or "?")
+				net.WriteString(v[2] or "?")
+				net.WriteString(v[3] or "?")
 			end
 		end
-	umsg.End()
+	net.Send(p)
 end
 local function maprepeat_cell(ent,cell,set,p)
 	if !ent or ent == NULL or !IsEntity(ent) then return end
-	umsg.Start((set and "maprepeat_setcell" or "maprepeat_cell"),p)
-		umsg.Short(ent:EntIndex())
-		umsg.String(cell or "0 0 0")
-	umsg.End()
+	net.Start((set and "maprepeat_setcell" or "maprepeat_cell"))
+		net.WriteInt(ent:EntIndex(), 16)
+		net.WriteString(cell or "0 0 0")
+	net.Send(p)
 end
 MapRepeat.PosWrap = 0
 MapRepeat.Hooks = {}
@@ -40,7 +48,7 @@ function MapRepeat.InstallHooks()
 		end
 	end
 	MapRepeat.Installed = true
-	umsg.Start("maprepeat_install"); umsg.End()
+	net.Start("maprepeat_install"); net.Broadcast()
 end
 function MapRepeat.SetNumber(k,v)
 	if !v then return end
@@ -73,7 +81,7 @@ function MapRepeat.SetCell(ent,cell)
 	maprepeat_cell(ent,cell,true)
 end
 function MapRepeat.PlayerData(ply)
-	umsg.Start("maprepeat_install",ply); umsg.End()
+	net.Start("maprepeat_install"); net.Send(ply)
 	for k,v in pairs(MapRepeat.Sync or {}) do maprepeat_num(k,v,ply) end
 	for k,v in pairs(MapRepeat.RGen or {}) do maprepeat_rgen(k,v,ply) end
 	for c,t in pairs(MapRepeat.Cells or {}) do 
@@ -184,9 +192,9 @@ end
 hook.Add("InitPostEntity","MR_IPE",function()
 	if !MapRepeat.Installed then 
 		MapRepeat = nil 
-		umsg.Start("maprepeat_uninstall"); umsg.End();
+		net.Start("maprepeat_uninstall"); net.Broadcast();
 		hook.Add("PlayerInitialSpawn","SL_NoMR",function(ply)
-			umsg.Start("maprepeat_uninstall",ply); umsg.End();
+			net.Start("maprepeat_uninstall"); net.Send(ply);
 		end)
 	else
 		MapRepeat.GenCell("0 0 0")
