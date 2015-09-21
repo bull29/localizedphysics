@@ -11,22 +11,22 @@ function MapRepeat.InstallHooks()
 		end
 	end
 end
-usermessage.Hook("maprepeat_install",function(um)
+net.Recieve("maprepeat_install",function(um)
 	MapRepeat.InstallHooks()
 end)
-usermessage.Hook("maprepeat_uninstall",function(um)
+net.Recieve("maprepeat_uninstall",function(um)
 	MapRepeat = nil
 end)
-usermessage.Hook("maprepeat_num",function(um)
+net.Recieve("maprepeat_num",function(um)
 	local k = um:ReadString()
 	MapRepeat.Sync[k] = um:ReadFloat()
 end)
-usermessage.Hook("maprepeat_rgen",function(um)
-	local k = um:ReadShort()
+net.Recieve("maprepeat_rgen",function(um)
+	local k = um:ReadInt(16)
 	if Entity(k):IsValid() then k = Entity(k) end
 	local rg = {}
-	local sz = um:ReadShort()
-	rg.r = um:ReadShort()
+	local sz = um:ReadInt(16)
+	rg.r = um:ReadInt(16)
 	local i
 	for i=1,sz do
 		rg[i] = {}
@@ -36,9 +36,9 @@ usermessage.Hook("maprepeat_rgen",function(um)
 	end
 	MapRepeat.RGen[k] = rg
 end)
-usermessage.Hook("maprepeat_cell",function(um)
+net.Recieve("maprepeat_cell",function(um)
 	if !MapRepeat then return end
-	local e = um:ReadShort()
+	local e = um:ReadInt(16)
 	if Entity(e):IsValid() then e = Entity(e) end
 	local c = um:ReadString()
 	--print(tostring(e) .. "->CELL: " .. c)
@@ -49,9 +49,9 @@ usermessage.Hook("maprepeat_cell",function(um)
 	MapRepeat.Cells[c][e] = true
 	MapRepeat.CelledEnts[e] = true
 end)
-usermessage.Hook("maprepeat_setcell",function(um)
+net.Recieve("maprepeat_setcell",function(um)
 	if !MapRepeat then return end
-	local e = um:ReadShort()
+	local e = um:ReadInt(16)
 	if Entity(e):IsValid() then e = Entity(e) end
 	local c = um:ReadString()
 	if type(MapRepeat.CelledEnts[e]) == 'string' then
