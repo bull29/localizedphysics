@@ -193,6 +193,11 @@ hook.Add("InitPostEntity","MR_IPE",function()
 		--print("Generating cell 0,0,0")
 	end
 end)
+MapRepeat.AddHook("PlayerSpawn","DR_MPDeath",function(ply) -- Death hook
+	if (IsValid(ply)) then
+		MapRepeat.SetCell(ply,"0 0 0")
+	end
+end)
 hook.Add("EntityKeyValue","MR_KVH",function(ent,k,v)
 	local rep = {}
 	--print("Called EntityKeySetValue")
