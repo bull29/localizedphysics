@@ -11,36 +11,36 @@ function MapRepeat.InstallHooks()
 		end
 	end
 end
-net.Recieve("maprepeat_install",function(um)
+net.Receive("maprepeat_install",function(length,callback)
 	MapRepeat.InstallHooks()
 end)
-net.Recieve("maprepeat_uninstall",function(um)
+net.Receive("maprepeat_uninstall",function(length,callback)
 	MapRepeat = nil
 end)
-net.Recieve("maprepeat_num",function(um)
-	local k = um:ReadString()
-	MapRepeat.Sync[k] = um:ReadFloat()
+net.Receive("maprepeat_num",function(length,callback)
+	local k = net.ReadString()
+	MapRepeat.Sync[k] = net.ReadFloat()
 end)
-net.Recieve("maprepeat_rgen",function(um)
-	local k = um:ReadInt(16)
+net.Receive("maprepeat_rgen",function(length,callback)
+	local k = net.ReadInt(16)
 	if Entity(k):IsValid() then k = Entity(k) end
 	local rg = {}
-	local sz = um:ReadInt(16)
-	rg.r = um:ReadInt(16)
+	local sz = net.ReadInt(16)
+	rg.r = net.ReadInt(16)
 	local i
 	for i=1,sz do
 		rg[i] = {}
-		rg[i][1] = um:ReadString()
-		rg[i][2] = um:ReadString()
-		rg[i][3] = um:ReadString()
+		rg[i][1] = net.ReadString()
+		rg[i][2] = net.ReadString()
+		rg[i][3] = net.ReadString()
 	end
 	MapRepeat.RGen[k] = rg
 end)
-net.Recieve("maprepeat_cell",function(um)
+net.Receive("maprepeat_cell",function(length,callback)
 	if !MapRepeat then return end
-	local e = um:ReadInt(16)
+	local e = net.ReadInt(16)
 	if Entity(e):IsValid() then e = Entity(e) end
-	local c = um:ReadString()
+	local c = net.ReadString()
 	--print(tostring(e) .. "->CELL: " .. c)
 	if type(MapRepeat.CelledEnts[e]) == 'string' then
 		MapRepeat.Cells[MapRepeat.CelledEnts[e]][e] = nil
@@ -49,11 +49,11 @@ net.Recieve("maprepeat_cell",function(um)
 	MapRepeat.Cells[c][e] = true
 	MapRepeat.CelledEnts[e] = true
 end)
-net.Recieve("maprepeat_setcell",function(um)
+net.Receive("maprepeat_setcell",function(length,callback)
 	if !MapRepeat then return end
-	local e = um:ReadInt(16)
+	local e = net.ReadInt(16)
 	if Entity(e):IsValid() then e = Entity(e) end
-	local c = um:ReadString()
+	local c = net.ReadString()
 	if type(MapRepeat.CelledEnts[e]) == 'string' then
 		MapRepeat.Cells[MapRepeat.CelledEnts[e]][e] = nil
 		if IsEntity(e) then
