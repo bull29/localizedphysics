@@ -365,8 +365,8 @@ hook.Add("Think","SLWaterCheck",function()
     else
 		if wasinship then
             for k,v in pairs(bmat) do
-                v:SetInt("$fogstart",fogs[k.."s"] or 0)
-                v:SetInt("$fogend",fogs[k.."e"] or 0)
+                v:SetInt("$fogstart",fogs[k.."s"] or 500)
+                v:SetInt("$fogend",fogs[k.."e"] or 1000)
             end
         end
         wasinship = false
