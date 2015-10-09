@@ -7,6 +7,7 @@ util.AddNetworkString("maprepeat_install")
 util.AddNetworkString("maprepeat_uninstall")
 
 local function maprepeat_num(k,v,p)
+	if !IsValid(p) then return end
 	net.Start("maprepeat_num")
 		net.WriteString(k)
 		net.WriteFloat(v)
