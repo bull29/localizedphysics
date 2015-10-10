@@ -1,3 +1,10 @@
+util.AddNetworkString("maprepeat_num")
+util.AddNetworkString("maprepeat_space")
+util.AddNetworkString("maprepeat_rgen")
+util.AddNetworkString("maprepeat_setcell")	
+util.AddNetworkString("maprepeat_cell")
+util.AddNetworkString("maprepeat_install")
+util.AddNetworkString("maprepeat_uninstall")
 local function maprepeat_num(k,v,p)
 	umsg.Start("maprepeat_num",p)
 		umsg.String(k)
@@ -18,6 +25,12 @@ local function maprepeat_rgen(e,t,p)
 			end
 		end
 	umsg.End()
+end
+local function maprepeat_space(s,p) --SPACE!!!
+	if !s or !p then return end
+	net.Start("maprepeat_space")
+		net.WriteFloat(s)
+	net.Send(p)
 end
 local function maprepeat_cell(ent,cell,set,p)
 	if !ent or ent == NULL or !IsEntity(ent) then return end
@@ -71,9 +84,22 @@ function MapRepeat.SetCell(ent,cell)
 	MapRepeat.Cells[cell][ent] = true
 	ent.Cells = {cell}
 	maprepeat_cell(ent,cell,true)
+
+	-- Space stuff! Kisses from David.
+	local phys = ent:GetPhysicsObject()
+	if IsValid(phys) and !ent:IsPlayer() then
+		local cellz = tonumber(string.sub(cell,5),10)
+		print(cellz, SPACE)
+		if(SPACE and cellz >= tonumber(SPACE)) then
+			phys:EnableGravity(false)
+		elseif(SPACE and cellz < tonumber(SPACE)) then
+				phys:EnableGravity(true)
+		end
+	end
 end
 function MapRepeat.PlayerData(ply)
 	umsg.Start("maprepeat_install",ply); umsg.End()
+	maprepeat_space(SPACE,ply) --SPACE!
 	for k,v in pairs(MapRepeat.Sync or {}) do maprepeat_num(k,v,ply) end
 	for k,v in pairs(MapRepeat.RGen or {}) do maprepeat_rgen(k,v,ply) end
 	for c,t in pairs(MapRepeat.Cells or {}) do 
@@ -195,20 +221,23 @@ hook.Add("InitPostEntity","MR_IPE",function()
 end)
 hook.Add("EntityKeyValue","MR_KVH",function(ent,k,v)
 	local rep = {}
-	--print("Called EntityKeySetValue")
 	if string.sub(k,1,4) == 'cell' then
-		local i = string.sub(k,5) 
+		local i = string.sub(k,5)
 		local c = v
 		if string.find(c,'?') or string.find(c,'%%') then 
 			local ct = MapRepeat.CellToArray(c)
 			rep[#rep+1] = ct
 		else
 			MapRepeat.AddCell(ent,c)
-			--print("Adding a cell")
 		end
-	end 
+	end
+	-- More space stuff!
+	if string.sub(k,1,7) == 'space' then
+		if(v != 0 and v) then
+			SPACE = v
+		end
+	end
 	if #rep > 0 then
-		--print("Setting RGen 1")
 		MapRepeat.SetRGen(ent,rep)
 	end
 end)
