@@ -11,36 +11,40 @@ function MapRepeat.InstallHooks()
 		end
 	end
 end
-net.Recieve("maprepeat_install",function(um)
+net.Receive("maprepeat_install",function()
 	MapRepeat.InstallHooks()
 end)
-net.Recieve("maprepeat_uninstall",function(um)
+net.Receive("maprepeat_uninstall",function()
 	MapRepeat = nil
 end)
-net.Recieve("maprepeat_num",function(um)
-	local k = um:ReadString()
-	MapRepeat.Sync[k] = um:ReadFloat()
+net.Receive("maprepeat_num",function()
+	local k = net.ReadString()
+	MapRepeat.Sync[k] = net.ReadFloat()
 end)
-net.Recieve("maprepeat_rgen",function(um)
-	local k = um:ReadInt(16)
-	if Entity(k):IsValid() then k = Entity(k) end
+net.Receive("maprepeat_rgen",function()
+	local k = net.ReadInt(16)
+	if IsValid(Entity(k)) then k = Entity(k) end
 	local rg = {}
-	local sz = um:ReadInt(16)
-	rg.r = um:ReadInt(16)
+	local sz = net.ReadInt(16)
+	rg.r = net.ReadInt(16)
 	local i
 	for i=1,sz do
 		rg[i] = {}
-		rg[i][1] = um:ReadString()
-		rg[i][2] = um:ReadString()
-		rg[i][3] = um:ReadString()
+		rg[i][1] = net.ReadString()
+		rg[i][2] = net.ReadString()
+		rg[i][3] = net.ReadString()
 	end
 	MapRepeat.RGen[k] = rg
 end)
-net.Recieve("maprepeat_cell",function(um)
+net.Receive("maprepeat_space",function() --SPACE
+	local s = net.ReadFloat()
+	MapRepeat.Space = s
+end)
+net.Receive("maprepeat_cell",function()
 	if !MapRepeat then return end
-	local e = um:ReadInt(16)
-	if Entity(e):IsValid() then e = Entity(e) end
-	local c = um:ReadString()
+	local e = net.ReadInt(16)
+	if IsValid(Entity(e)) then e = Entity(e) end
+	local c = net.ReadString()
 	--print(tostring(e) .. "->CELL: " .. c)
 	if type(MapRepeat.CelledEnts[e]) == 'string' then
 		MapRepeat.Cells[MapRepeat.CelledEnts[e]][e] = nil
@@ -49,11 +53,11 @@ net.Recieve("maprepeat_cell",function(um)
 	MapRepeat.Cells[c][e] = true
 	MapRepeat.CelledEnts[e] = true
 end)
-net.Recieve("maprepeat_setcell",function(um)
+net.Receive("maprepeat_setcell",function()
 	if !MapRepeat then return end
-	local e = um:ReadInt(16)
-	if Entity(e):IsValid() then e = Entity(e) end
-	local c = um:ReadString()
+	local e = net.ReadInt(16)
+	if IsValid(Entity(e)) then e = Entity(e) end
+	local c = net.ReadString()
 	if type(MapRepeat.CelledEnts[e]) == 'string' then
 		MapRepeat.Cells[MapRepeat.CelledEnts[e]][e] = nil
 		if IsEntity(e) then
@@ -112,6 +116,33 @@ function MapRepeat.DrawCell(x,y,z)
 		end
 	cam.End3D()
 end
+MapRepeat.AddHook("PostDraw2DSkyBox","DR_MRSkybox",function() --SPAACE!
+	if !MapRepeat.Space then return end
+	local fogmode = render.GetFogMode()
+	local pl = LocalPlayer()
+	if !pl.Cell then
+		pl.Cell = Vector(0,0,0)
+	end
+	if(pl.Cell.z >= MapRepeat.Space) then
+	local mul = pl.Cell.z
+	render.OverrideDepthEnable(true,false)
+	
+	cam.Start3D(Vector(0,0,0),RenderAngles())
+		render.SetMaterial(Material("maprepeater/space"))
+		render.DrawBox(Vector(0,0,-512),Angle(0,0,0),Vector(-512,-512,0),Vector(512,512,0),Color(10,10,10,255),0)
+		render.DrawBox(Vector(0,0,512),Angle(0,0,0),Vector(512,512,0),Vector(-512,-512,0),Color(10,10,10,255),0)
+		render.DrawBox(Vector(0,-512,0),Angle(0,0,0),Vector(-512,0,-512),Vector(512,0,512),Color(10,10,10,255),0)
+		render.DrawBox(Vector(0,512,0),Angle(0,0,0),Vector(512,0,512),Vector(-512,0,-512),Color(10,10,10,255),0)
+		render.DrawBox(Vector(512,0,0),Angle(0,0,0),Vector(0,512,512),Vector(0,-512,-512),Color(10,10,10,255),0)
+		render.DrawBox(Vector(-512,0,0),Angle(0,0,0),Vector(0,-512,-512),Vector(0,512,512),Color(10,10,10,255),0)
+		render.FogMode(0)
+	cam.End3D()
+	
+	render.OverrideDepthEnable(false,false)
+	elseif(fogmode) then
+		render.FogMode(fogmode)
+	end
+end)
 local ignored_ents = {}
 ignored_ents["viewmodel"] = true
 ignored_ents["class CLuaEffect"] = true
