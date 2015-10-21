@@ -28,7 +28,7 @@ local draw_with_effect = kv_swap{
 	"gmod_turret",
 }
 ------------------------------------------------------------------------------------------
--- Name: AddPropId
+-- Name: AddPropIds
 -- Desc: Called when a contents usermessage is recieved; waits until the entity indices are valid
 ------------------------------------------------------------------------------------------
 local function AddPropIds(tab,enti,shipi,ghosti,times)
@@ -57,15 +57,15 @@ end
 -- Name: sl_ship_object
 -- Desc: The hull/contents usermessage, basically gives the client data about ships
 ------------------------------------------------------------------------------------------
-usermessage.Hook("sl_ship_object",function(um) --this is how the server tells us which entities are "contained"
-	local enti,yes,hull = um:ReadShort(),um:ReadBool(),um:ReadBool()
+net.Receive("sl_ship_object",function(um) --this is how the server tells us which entities are contained"
+	local enti,yes,hull = net.ReadInt(16),net.ReadBool(),net.ReadBool()
 	local tab = GH.SHIPCONTENTS
 	if hull then tab = GH.GHOSTHULLS end
 	if yes and hull then
-		local shipi,ghosti = um:ReadShort(),um:ReadShort()
+		local shipi,ghosti = net.ReadInt(16),net.ReadInt(16)
 		AddHullIds(tab,enti,shipi,ghosti,0)
 	elseif yes then
-		local shipi,ghosti = um:ReadShort(),um:ReadShort()
+		local shipi,ghosti = net.ReadInt(16),net.ReadInt(16)
 		AddPropIds(tab,enti,shipi,ghosti,0)
 	else
 		local ent = Entity(enti)
@@ -85,9 +85,9 @@ end)
 -- Name: sl_ship_explosion
 -- Desc: The explosion usermessage, used
 ------------------------------------------------------------------------------------------
-usermessage.Hook("sl_ship_explosion",function(um)
+net.Receive("sl_ship_explosion",function(um)
 	local ed = EffectData()
-	local pos = um:ReadVector()
+	local pos = net.ReadVector()
 	ed:SetStart(pos)
 	ed:SetOrigin(pos)
 	util.Effect("Explosion",ed)
@@ -101,8 +101,8 @@ end)
 -- Name: sl_antiteleport_cl
 -- Desc: Clientside portion of the anti-teleport handshake
 ------------------------------------------------------------------------------------------
-usermessage.Hook("sl_antiteleport_cl",function(um) --recieved when the player's position is set by the server, used to avoid SetPos packet loss resulting in teleporting to the sky
-	local ppos = um:ReadVector()
+net.Receive("sl_antiteleport_cl",function(um) --recieved when the player's position is set by the server, used to avoid SetPos packet loss resulting in teleporting to the sky
+	local ppos = net.ReadVector()
 	if (LocalPlayer():GetRealPos():Distance(ppos) > 3000) then
 		RunConsoleCommand("sl_antiteleport")
 	end
@@ -183,7 +183,7 @@ GH.DoCalcView = function(ply,pos,ang,fov,nearz,farz,nope)
 	end,ErrorNoHalt)
 	if apply then
 		if method == 0 then
-			return view
+			return view//GAMEMODE:CalcView(ply,pos,ang,fov)
 		elseif method == 1 then
 			return GAMEMODE:CalcView(ply,view.origin,view.angles,fov,nearz,farz)
 		end
@@ -224,7 +224,7 @@ concommand.Add("ghd_fixcamera",function()
 	hook.Remove("CalcView",cvhook)
 	cvhook = string.char(math.random(32,122)).."SLShipView"
 	hook.Add("CalcView",cvhook,GH.DoCalcView)
-	Msg("GHD Camera Fix attempted, try now and run again if it doesn't work.")
+	print("GHD Camera Fix attempted, try now and run again if it doesn't work.")
 end)
 ------------------------------------------------------------------------------------------
 -- Name: SLRestoreRealPos
@@ -305,12 +305,12 @@ end)
 -- Name: sl_fake_tooltrace
 -- Desc: Sent by the server to fake the tool trace for interrupted CanTool messages
 ------------------------------------------------------------------------------------------
-usermessage.Hook("sl_fake_tooltrace",function(um)
-	local wep = um:ReadEntity()
-	local ent = um:ReadEntity()
-	local pos = um:ReadVector()
-	local nrm = um:ReadVector()
-	local bone = um:ReadShort()
+net.Receive("sl_fake_tooltrace",function(um)
+	local wep = net.ReadEntity()
+	local ent = net.ReadEntity()
+	local pos = net.ReadVector()
+	local nrm = net.ReadVector()
+	local bone = net.ReadInt(16)
 	wep:DoShootEffect(pos,nrm,ent,bone,true)
 end)
 local warpmat = Material("effects/water_warp01")
@@ -332,15 +332,6 @@ hook.Add("Think","SLWaterCheck",function()
 			if blw then
 				bmat[blw] = bmat[blw] or Material(blw)
 				blw = bmat[blw]
-				/*
-				mtl:SetInt("$fogenable",1)
-				blw:SetInt("$fogenable",1)
-				mtl:SetInt("$fogstart",1)
-				blw:SetInt("$fogstart",1)
-				blw:SetInt("$fogend",1000000)
-				mtl:SetInt("$fogend",1000000)
-				blw:SetTexture("$normalmap",emptynrm)
-				mtl:SetTexture("$normalmap",emptynrm)*/
 				blw:SetString("$underwateroverlay","")
 			end
         end
@@ -365,8 +356,8 @@ hook.Add("Think","SLWaterCheck",function()
     else
 		if wasinship then
             for k,v in pairs(bmat) do
-                v:SetInt("$fogstart",fogs[k.."s"] or 0)
-                v:SetInt("$fogend",fogs[k.."e"] or 0)
+				v:SetInt("$fogstart",fogs[k.."s"] or 500)
+                v:SetInt("$fogend",fogs[k.."e"] or 1000)
             end
         end
         wasinship = false
