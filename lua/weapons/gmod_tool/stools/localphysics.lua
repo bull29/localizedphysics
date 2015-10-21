@@ -8,8 +8,8 @@ table.Merge(TOOL,{
 	}
 })
 if CLIENT then
-	language.Add("Tool.localphysics.name", "Localized Physics (Gravity Hull 1.4)!")
-	language.Add("Tool.localphysics.desc", "This tool is a (semi)fixed version of Gravity Hull Designator. Intended for developer use only.")
+	language.Add("Tool.localphysics.name", "Gravity Hull Designator")
+	language.Add("Tool.localphysics.desc", "Create a local physics system for a ship or building so that you can walk around inside regardless of its movement or angles.")
 	language.Add("Tool.localphysics.0", "Fire at a prop or entity to create a local physics system. Right click at a prop to remove the system.")
 	language.Add("Hint_ghd", "Check your chatbox for instructions.")
 else
