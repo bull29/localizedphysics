@@ -1,3 +1,7 @@
+util.AddNetworkString("sl_ship_object")
+util.AddNetworkString("sl_ship_explosion")
+util.AddNetworkString("sl_antiteleport_cl")
+util.AddNetworkString("sl_fake_tooltrace")
 local GH = GravHull
 include('sh_codetools.lua')
 GH.HULLS = {} --contains all hull props, used to stop multiple designations
@@ -46,15 +50,15 @@ end
 -- Desc: Send an object to the client.
 ------------------------------------------------------------------------------------------
 function GH.ShipObject(p,y,h,e,g)
-	umsg.Start("sl_ship_object")
-		umsg.Short(p:EntIndex())
-		umsg.Bool(y)
-		umsg.Bool(h)
+	net.Start("sl_ship_object")
+		net.WriteInt(p:EntIndex(),16)
+		net.WriteBool(y)
+		net.WriteBool(h)
 		if e then
-			umsg.Short(e:EntIndex())
-			umsg.Short(g:EntIndex())
+			net.WriteInt(e:EntIndex(),16)
+			net.WriteInt(g:EntIndex(),16)
 		end
-	umsg.End()
+	net.Broadcast()
 end
 function GH.ClientGhost(ent,ge,e)
 	GH.ShipObject(ge,true,true,ent,e)
@@ -128,10 +132,10 @@ local explosive_models = kv_swap{
 hook.Add("EntityRemoved","SLBarrelFix",function(ent)
 xpcall(function()
 	if ent.InShip && ((ent:GetClass() == "prop_physics" && ent:Health() <= 0 && explosive_models[ent:GetModel()]) || ent:GetClass() == "npc_grenade_frag") then
-		umsg.Start("sl_ship_explosion")
-			umsg.Vector(ent:GetPos())
-			umsg.Vector(ent:GetRealPos())
-		umsg.End()
+		net.Start("sl_ship_explosion")
+			net.WriteVector(ent:GetPos())
+			net.WriteVector(ent:GetRealPos())
+		net.Broadcast()
 	end
 end,ErrorNoHalt)
 end)
@@ -348,7 +352,9 @@ concommand.Add("sl_antiteleport",function(p)
 	if !p.AntiTeleportPos then return end
 	if (p:GetRealPos():Distance(p.AntiTeleportPos) > 3000) and !p:InVehicle() then
 		p:SetRealPos(p.AntiTeleportPos)
-		SendUserMessage("sl_antiteleport_cl",p,p.AntiTeleportPos) --pingpong until they're where they should be
+		net.Start("sl_antiteleport_cl")
+		net.WriteVector(p.AntiTeleportPos)
+		net.Send(p)
 	else
 		p.AntiTeleportPos = nil
 	end
@@ -393,13 +399,13 @@ hook.Add("CanTool","SLToolFix",function(pl,tr,tm,nope)
 			dofx = tool:Reload(ttr)
 		end
 		if dofx then
-			umsg.Start("sl_fake_tooltrace")
-				umsg.Entity(pl:GetActiveWeapon())
-				umsg.Entity(tr.Entity)
-				umsg.Vector(tr.HitPos)
-				umsg.Vector(tr.HitNormal)
-				umsg.Short(tr.PhysicsBone)
-			umsg.End()
+			net.Start("sl_fake_tooltrace")
+				net.WriteEntity(pl:GetActiveWeapon())
+				net.WriteEntity(tr.Entity)
+				net.WriteVector(tr.HitPos)
+				net.WriteVector(tr.HitNormal)
+				net.WriteInt(tr.PhysicsBone,16)
+			net.Send(pl)
 		end
 		return false --don't do the normal tool stuff
 	end
@@ -411,7 +417,9 @@ end)
 function GH.AntiTeleport(p,ppos)
 	if !p:Alive() or p:InVehicle() then return end
 	p.AntiTeleportPos = ppos
-	SendUserMessage("sl_antiteleport_cl",p,p.AntiTeleportPos)
+	net.Start("sl_antiteleport_cl")
+	net.WriteVector(p.AntiTeleportPos)
+	net.Send(p)
 end
 local never_eat = kv_swap{
 	"physgun_beam"
@@ -504,7 +512,7 @@ function GH.ShipEat(e,p,nm)
 					end
 					if (p:GetPhysicsObjectCount() > 1) then
 						pp[i] = g:RealLocalToWorld(e:RealWorldToLocal(po:GetPos()))
-						pa[i] = g:RealLocalToWorldAngles(e:RealWorldToLocalAngles(po:GetAngle()))
+						pa[i] = g:RealLocalToWorldAngles(e:RealWorldToLocalAngles(po:GetAngles()))
 					end
 				end
 			end
@@ -515,7 +523,7 @@ function GH.ShipEat(e,p,nm)
 					local po = p:GetPhysicsObjectNum(i-1)
 					if (po:IsValid()) then
 						po:SetPos(pp[i])
-						po:SetAngle(pa[i])
+						po:SetAngles(pa[i])
 					end
 				end
 			end
@@ -588,7 +596,7 @@ function GH.ShipSpit(e,p,nm,nog,nt)
 			if po:IsValid() then
 				pv[i] = e:RealLocalToWorld(g:RealWorldToLocal(po:GetVelocity()+g:GetRealPos()))-e:GetRealPos()
 				if (p:GetPhysicsObjectCount() > 1) then
-					pp[i], pa[i] = WorldToLocal(po:GetPos(),po:GetAngle(),g:GetRealPos(),g:GetRealAngles())
+					pp[i], pa[i] = WorldToLocal(po:GetPos(),po:GetAngles(),g:GetRealPos(),g:GetRealAngles())
 					pp[i], pa[i] = LocalToWorld(pp[i], pa[i], e:GetPos(), e:GetAngles())
 				end
 			end
@@ -602,7 +610,7 @@ function GH.ShipSpit(e,p,nm,nog,nt)
 				local po = p:GetPhysicsObjectNum(i-1)
 				if (po:IsValid()) then
 					po:SetPos(pp[i])
-					po:SetAngle(pa[i])
+					po:SetAngles(pa[i])
 				end
 			end
 		end
@@ -710,7 +718,7 @@ function GH.PhysGhost(ent,p)
 				local gp = g:GetPhysicsObjectNum(i-1)
 				if (gp && po && gp:IsValid() && po:IsValid()) then
 					gp:SetPos(ent:RealLocalToWorld(mg:WorldToLocal(po:GetPos())))
-					gp:SetAngle(ent:RealLocalToWorldAngles(mg:WorldToLocalAngles(po:GetAngle())))
+					gp:SetAngles(ent:RealLocalToWorldAngles(mg:WorldToLocalAngles(po:GetAngles())))
 				end
 			end
 		end
@@ -762,7 +770,7 @@ function GH.PhysGhost(ent,p)
 				local gp = g:GetPhysicsObjectNum(i-1)
 				if (gp && po && gp:IsValid() && po:IsValid()) then
 					gp:SetPos(mg:RealLocalToWorld(ent:RealWorldToLocal(po:GetPos())))
-					gp:SetAngle(mg:RealLocalToWorldAngles(ent:RealWorldToLocalAngles(po:GetAngle())))
+					gp:SetAngles(mg:RealLocalToWorldAngles(ent:RealWorldToLocalAngles(po:GetAngles())))
 				end
 			end
 		end
@@ -1137,7 +1145,7 @@ function GH.RocketFly(r,p)
 	if r.InShip and GH.SHIPS[r.InShip] then
 		dst = GH.SHIPS[r.InShip].MainGhost:LocalToWorld(r.InShip:WorldToLocal(dst))
 	end
-	local nrm = (dst - r:GetRealPos()):Normalize()
+	local nrm = (dst - r:GetRealPos()):GetNormalized()
 	local ang = r:GetRealAngles()
 	local nang = nrm:Angle()
 	ang.p = math.ApproachAngle(ang.p,nang.p,(nang.p-ang.p)/8)
@@ -1210,12 +1218,11 @@ xpcall(function()
 		if !ply.Cells then MapRepeat.SetCell(ply,"0 0 0") end
 		MapRepeat.SetCell(ent,ply.Cells[1])
 	elseif MapRepeat and ent:IsWeapon() then
-		print(ent)
+		--print(ent)
 		MapRepeat.ClaimWep(ent)
 	end
 	if IsValid(ply) and GH.SHIPS[ply.InShip or ply.MyShip] then
 		local ship = (ply.InShip or ply.MyShip)
-		//if GH.EntInShip(
 		if GH.EntInShip(ship,ent) then
 			local ea = ent:GetAngles()
 			GH.ShipEat(ship,ent,NO_VEL)
@@ -1334,7 +1341,7 @@ end,ErrorNoHalt)
 end)
 ------------------------------------------------------------------------------------------
 -- Name: SLClientData
--- Desc: Send a newly joining client any usermessages that it missed before
+-- Desc: Send a newly joining client any net messages that it missed before
 ------------------------------------------------------------------------------------------
 function SLClientData(ply)
 	for ent,data in pairs(GH.SHIPS) do
