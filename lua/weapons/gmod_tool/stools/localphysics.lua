@@ -15,11 +15,7 @@ if CLIENT then
 else
 	concommand.Add("ghd_help",function(p)
 		p:SendHint("ghd",0)
-		p:ChatPrint("There are enough bugs in this to feed an ant-eater for life.")
-		p:ChatPrint("You can help by contributing to the Github of the tool, as I am neither the best or most experienced coder.")
-		p:ChatPrint("")
 		p:ChatPrint("Use this tool on any surface to create the physics system.")
-		p:ChatPrint("If you use it on a box upper surface walk on it. you will notice your weapons becomes invisible. I am trying to fix this.")
 		p:ChatPrint("Notice that you will stay relative to the object, including when nocliping and walking.")
 		p:ChatPrint("Change the Gravity Percentage slider to define how much gravity pulls on players, NPCs and objects. This version works for NPCs as well!")
 	end)
