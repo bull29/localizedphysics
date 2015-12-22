@@ -97,12 +97,12 @@ function MapRepeat.SetCell(ent,cell) -- Sets the cell for ShouldCollide and ever
 		elseif(SPACE and cellz < tonumber(SPACE)) then -- If you're below
 				phys:EnableGravity(true)
 		end
-	/*elseif(ent:IsPlayer()) then -- BREAKS MR, COME BACK TO THIS!
+	elseif(ent:IsPlayer()) then
 		if(SPACE and cellz >= tonumber(SPACE)) then
-			ent:SetGravity(0.000001)
+			ent:SetGravity(0.0001)
 		elseif(SPACE and cellz < tonumber(SPACE)) then
 			ent:SetGravity(1)
-		end*/
+		end
 	end
 	--
 end
