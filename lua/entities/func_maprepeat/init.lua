@@ -58,6 +58,11 @@ local function MR_Touch(self,ent)
 			local ctc = ct[1]..' '..ct[2]..' '..ct[3] -- Find x y and z of the cell
 			MapRepeat.SetCell(ent,ctc) -- Set the cell
 			print("new cell: "..ctc) -- Print new cell
+			if(ent:IsPlayer()) then -- If it's a player changing cells
+				for _,wep in pairs(ent:GetWeapons()) do -- Find their weapons
+					MapRepeat.SetCell(wep,ctc) -- Set the weapons' cell
+				end
+			end
 			if ent:IsVehicle() and ent:GetDriver() != NULL then -- If it's a vehicle with a driver
 				ent:GetDriver().SkipStart = true -- Set the driver to skip teleport
 				MapRepeat.SetCell(ent:GetDriver(),ctc) -- Set the driver's cell
