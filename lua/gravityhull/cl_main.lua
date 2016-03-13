@@ -73,6 +73,12 @@ net.Receive("sl_ship_object",function(um) --this is how the server tells us whic
 			if ent.RealColor or ent.WasHidden then
 				ent:SetColor(ent.RealColor or Color(255,255,255,255))
 				if ent:GetColor().a == 0 then ent:SetColor(Color(255,255,255,255)) end
+				
+				if(ent.GetActiveWeapon and IsValid(ent:GetActiveWeapon())) then -- When a player leaves the hull, reset their weapons to be visible
+					ent:GetActiveWeapon():SetColor(Color(255,255,255,255)) 
+					ent:GetActiveWeapon():SetRenderMode(RENDERMODE_NORMAL)
+				end	
+				
 			end
 			if (ent == LocalPlayer()) then
 				ent.RollCorrection = true
@@ -239,7 +245,7 @@ local function SLRestoreRealPos(TABLE)
 					if ent.RealAng then ent:SetAngles(ent.RealAng) end
 					if ent.RealColor then ent:SetColor(ent.RealColor) end
 					if ent.RealRenderMode then ent:SetRenderMode(ent.RealRenderMode) end
-					if (ent.GetActiveWeapon and IsValid(ent:GetActiveWeapon())) then ent:GetActiveWeapon():SetColor(Color(255,255,255,255)) end
+					//if (ent.GetActiveWeapon and IsValid(ent:GetActiveWeapon())) then ent:GetActiveWeapon():SetColor(Color(255,255,255,255)) end
 				end
 			//end
 		end
@@ -272,7 +278,10 @@ local function SLShipContents(TABLE,UseSG,cover)
 					ent.RealColor = ent:GetColor()
 					ent.RealRenderMode = ent:GetRenderMode()
 					ent:SetRenderMode(RENDERMODE_NONE)
-					if (ent.GetActiveWeapon and IsValid(ent:GetActiveWeapon())) then ent:GetActiveWeapon():SetColor(Color(0,0,0,0)) end
+					if (ent.GetActiveWeapon and IsValid(ent:GetActiveWeapon())) then -- When a player enters a hull, set their weapons to be invisible.
+						ent:GetActiveWeapon():SetColor(Color(0,0,0,0)) 
+						ent:GetActiveWeapon():SetRenderMode(RENDERMODE_NONE)
+					end
 				elseif ent != LocalPlayer() && (ent:GetMoveType() != MOVETYPE_NONE and ent:GetBoneCount()) == 1 && !ent.WasHidden then
 					local pos,ang = ent:GetRealPos(),ent:GetRealAngles()
 					ent.RealPos = pos
