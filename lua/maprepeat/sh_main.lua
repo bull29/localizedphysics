@@ -127,3 +127,53 @@ function util.TraceLine(_tr) -- Override for TraceLine
 	tro.StartPos = tr.start
 	return tro
 end
+
+--
+-- WE NEED MORE UTIL TRACES SIR, WE NEED MORE.
+--
+
+if !util.RealTraceEntity then
+	util.RealTraceEntity = util.TraceLine
+end
+function util.TraceEntity(te)
+	if !MapRepeat then
+		util.TraceEntity = util.RealTraceEntity
+		return util.TraceEntity(te)
+	end
+
+	cell,te.start,te.endpos = MapRepeat.PosToCell(te.start,te.endpos)
+	for _,e in pairs(ents.GetAll()) do
+		if !MapRepeat.InCell(e,cell) && (CLIENT or e:GetMoveType() != MOVETYPE_NONE) then
+			if type(te.filter) != 'table' then te.filter = {te.filter} end
+			te.filter[#te.filter+1] = e
+		end
+	end
+	
+	local teo = util.RealTraceEntity(te)
+	teo.HitPos = MapRepeat.CellToPos(teo.HitPos,cell)
+	teo.StartPos = te.start
+	return teo
+end
+
+/*if !util.RealTraceHull then
+	util.RealTraceHull = util.TraceHull
+end
+function util.TraceHull(th)
+	if !MapRepeat then
+		util.TraceHull = util.RealTraceHull
+		return util.TraceHull(th)
+	end
+
+	cell,th.start,th.endpos = MapRepeat.PosToCell(th.start,th.endpos)
+	for _,e in pairs(ents.GetAll()) do
+		if !MapRepeat.InCell(e,cell) && (CLIENT or e:GetMoveType() != MOVETYPE_NONE) then
+			if type(th.filter) != 'table' then th.filter = {th.filter} end
+			th.filter[#th.filter+1] = e
+		end
+	end
+	
+	local tho = util.RealTraceEntity(th)
+	tho.HitPos = MapRepeat.CellToPos(tho.HitPos,cell)
+	tho.StartPos = th.start
+	return tho
+end*/
