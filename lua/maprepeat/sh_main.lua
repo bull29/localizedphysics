@@ -132,7 +132,7 @@ end
 -- WE NEED MORE UTIL TRACES SIR, WE NEED MORE.
 --
 
-if !util.RealTraceEntity then
+/*if !util.RealTraceEntity then
 	util.RealTraceEntity = util.TraceEntity
 end
 function util.TraceEntity(te)
@@ -153,9 +153,9 @@ function util.TraceEntity(te)
 	teo.HitPos = MapRepeat.CellToPos(teo.HitPos,cell)
 	teo.StartPos = te.start
 	return teo
-end
+end*/
 
-/*if !util.RealTraceHull then
+if !util.RealTraceHull then
 	util.RealTraceHull = util.TraceHull
 end
 function util.TraceHull(th)
@@ -165,15 +165,21 @@ function util.TraceHull(th)
 	end
 
 	cell,th.start,th.endpos = MapRepeat.PosToCell(th.start,th.endpos)
-	for _,e in pairs(ents.GetAll()) do
-		if !MapRepeat.InCell(e,cell) && (CLIENT or e:GetMoveType() != MOVETYPE_NONE) then
-			if type(th.filter) != 'table' then th.filter = {th.filter} end
-			th.filter[#th.filter+1] = e
-		end
-	end
 	
-	local tho = util.RealTraceHull(th)
-	tho.HitPos = MapRepeat.CellToPos(tho.HitPos,cell)
-	tho.StartPos = th.start
+	local tho = util.RealTraceHull( {
+	start = th.start,
+	endpos = th.endpos,
+	filter = function(e)
+		if(type(th.filter) == 'function') then
+			pass = th.filter(e)
+		else
+			pass = table.HasValue(th.filter,e)
+		end
+		return MapRepeat.InCell(e,cell) && pass
+	end,
+	mins = th.mins,
+	maxs = th.maxs,
+	} )
+	
 	return tho
-end*/
+end
