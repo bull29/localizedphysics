@@ -133,7 +133,7 @@ end
 --
 
 if !util.RealTraceEntity then
-	util.RealTraceEntity = util.TraceLine
+	util.RealTraceEntity = util.TraceEntity
 end
 function util.TraceEntity(te)
 	if !MapRepeat then
@@ -172,7 +172,7 @@ function util.TraceHull(th)
 		end
 	end
 	
-	local tho = util.RealTraceEntity(th)
+	local tho = util.RealTraceHull(th)
 	tho.HitPos = MapRepeat.CellToPos(tho.HitPos,cell)
 	tho.StartPos = th.start
 	return tho
