@@ -6,35 +6,22 @@ function EFFECT:Render()
     local ent = self.Ent
 local data = GravHull.SHIPCONTENTS[ent]
 if !data then return false end
-    //if ent:GetClass() == "prop_ragdoll" or ent:IsPlayer() then 
-        local lpos,lang = WorldToLocal(EyePos(),RenderAngles(),data.S:GetPos(),data.S:GetAngles())
-        cam.Start3D(LocalToWorld(lpos,lang,data.G.RealPos or data.G:GetRealPos(),data.G.RealAng or data.G:GetRealAngles()))
-    /*else
-        cam.Start3D(EyePos(),RenderAngles())
-    end*/
-		local col = (ent.OldColor or ent:GetColor())
+       local lpos,lang = WorldToLocal(EyePos(),RenderAngles(),data.S:GetPos(),data.S:GetAngles())
+       cam.Start3D(LocalToWorld(lpos,lang,data.G.RealPos or data.G:GetRealPos(),data.G.RealAng or data.G:GetRealAngles()))
+
+	local col = (ent.OldColor or ent:GetColor())
         local r,g,b,a = col.r, col.g, col.b, col.a
         render.SetColorModulation(r/255,g/255,b/255)
         render.SetBlend(a/255)
-        //if ent:GetClass() == "prop_ragdoll" or ent:IsPlayer() then
-            self.DrawAgainInWater = true
-            local lc = render.GetLightColor(ent:GetPos(true))
-            render.SuppressEngineLighting(true)
-            render.ResetModelLighting(lc.x*1.2-0.2,lc.y*1.2-0.2,lc.z*1.2-0.2)
-            ent:SetupBones()
-            ent:DrawModel()
-            render.SuppressEngineLighting(false)
-        /*else
-            self.DrawAgainInWater = nil
-            local oo = ent:GetRenderOrigin()
-            local oa = ent:GetRenderAngles()
-            ent:SetRenderOrigin(ent:GetPos())
-            ent:SetRenderAngles(ent:GetAngles())
-            ent:SetupBones()
-            ent:DrawModel()
-            ent:SetRenderOrigin(oo)
-            ent:SetRenderAngles(oa)
-        end*/
+        
+           self.DrawAgainInWater = true
+           local lc = render.GetLightColor(ent:GetPos(true))
+           render.SuppressEngineLighting(true)
+           render.ResetModelLighting(lc.x*1.2-0.2,lc.y*1.2-0.2,lc.z*1.2-0.2)
+           ent:SetupBones()
+           ent:DrawModel()
+           render.SuppressEngineLighting(false)
+        
         if ent:IsPlayer() and IsValid(ent:GetActiveWeapon()) then 
             ent:GetActiveWeapon():DrawModel() 
         end
