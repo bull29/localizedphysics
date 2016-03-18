@@ -46,7 +46,6 @@ function TOOL:LeftClick(tr)
 		GravHull.UpdateHull(ent)
 	end
 	if not (noconstraints) then self:GetOwner():ChatPrint("You created a local physics system!") else self:GetOwner():ChatPrint("You created a local physics hull!") end
-	self:GetOwner():ChatPrint("You created a local physics system!")
 	return true
 end
 --Remove Hull
