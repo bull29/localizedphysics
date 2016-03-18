@@ -26,6 +26,8 @@ function TOOL.BuildCPanel(cp)
 	                        Type = "Integer", Min = 0, Max = 300, Command = "localphysics_floordist"})
 	cp:AddControl("Checkbox",{Label = "Hit Surface Defines Floor", Description = "If checked, the surface shot by the tool will determine which way 'up' is. Otherwise it counts up as up, meaning your camera will be straight on a diagonal surface.",
 							  Command = "localphysics_gravnormal"})
+	cp:AddControl("Checkbox",{Label = "Include contraption", Description = "Would you like to apply the hull to your entire contraption?",
+							  Command = "localphysics_entireset"})
 	cp:AddControl("Slider",{Label = "Gravity Percentage", Description = "The percentage of normal gravity to apply to players and objects inside. Works with players and other objects! Works for NPCs.",
 							Type = "Integer", Min = 0, Max = 500, Command = "localphysics_gravity"})
 	cp:AddControl("Button",{Label = "Help", Description = "Brief help/FAQ", Command = "ghd_help"})
@@ -34,14 +36,16 @@ end
 --Designate Hull
 function TOOL:LeftClick(tr)
 	local ent = tr.Entity
+	local noconstraints = self:GetClientNumber("entireset")
 	if CLIENT then return IsValid(ent) and !GravHull.GHOSTHULLS[ent] end
 	if !(IsValid(ent) and ent:GetMoveType() == MOVETYPE_VPHYSICS and !GravHull.HULLS[ent]) then return false end
 	GravHull.RegisterHull(ent,self:GetClientNumber("floordist"),self:GetClientNumber("gravity"))
 	if self:GetClientNumber("gravnormal") > 0 then
-		GravHull.UpdateHull(ent,tr.HitNormal)
+		GravHull.UpdateHull(ent,tr.HitNormal,noconstraints)
 	else
 		GravHull.UpdateHull(ent)
 	end
+	if not (noconstraints) then self:GetOwner():ChatPrint("You created a local physics system!") else self:GetOwner():ChatPrint("You created a local physics hull!") end
 	self:GetOwner():ChatPrint("You created a local physics system!")
 	return true
 end
