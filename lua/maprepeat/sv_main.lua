@@ -95,7 +95,7 @@ function MapRepeat.SetCell(ent,cell) -- Sets the cell for an entity
 		if (IsValid(phys) and !ent:IsPlayer() and ent:GetClass() != "prop_combine_ball") then
 			if(cellz >= tonumber(SPACE)) then -- If you're above the threshold
 				phys:EnableGravity(false) -- Disable gravity
-			elseif(ellz < tonumber(SPACE)) then -- If you're below
+			elseif(cellz < tonumber(SPACE)) then -- If you're below
 				phys:EnableGravity(true) -- Enable gravity
 			end
 		elseif(ent:IsPlayer()) then
