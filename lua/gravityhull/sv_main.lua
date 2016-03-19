@@ -216,7 +216,7 @@ function GH.UpdateHull(ent,gravnormal,includeconstraints)
 	--and any prop connected with a nonsolid constraint to the parts list.
 	--Also adds other constrained hulls as special parts.
 	if(includeconstraints==1) then
-		print("INCLUDINGCONSTRAINTS")
+
 	if ent.Constraints then
 		while #tbtab > 0 do
 			local bd = tbtab[#tbtab]
