@@ -2,9 +2,10 @@ table.Merge(TOOL,{
 	Name = "Localized Physics",
 	Category = "Construction",
 	ClientConVar = {
-		floordist = 0,
-		gravnormal = 0,
+		floordist = 300,
+		gravnormal = 1,
 		gravity = 100,
+		entireset = 0,
 	}
 })
 if CLIENT then
@@ -27,13 +28,14 @@ function TOOL.BuildCPanel(cp)
 	cp:AddControl("Checkbox",{Label = "Hit Surface Defines Floor", Description = "If checked, the surface shot by the tool will determine which way 'up' is. Otherwise it counts up as up, meaning your camera will be straight on a diagonal surface.",
 							  Command = "localphysics_gravnormal"})
 	cp:AddControl("Checkbox",{Label = "Include contraption", Description = "Would you like to apply the hull to your entire contraption?",
-							  Command = "localphysics_entireset"})
+							  Command = "localphysics_entireset"}) --same depcreated method -Bull
 	cp:AddControl("Slider",{Label = "Gravity Percentage", Description = "The percentage of normal gravity to apply to players and objects inside. Works with players and other objects! Works for NPCs.",
 							Type = "Integer", Min = 0, Max = 500, Command = "localphysics_gravity"})
 	cp:AddControl("Button",{Label = "Help", Description = "Brief help/FAQ", Command = "ghd_help"})
 	cp:AddControl("Button",{Label = "Fix Camera", Description = "If you're teleporting to the sky when you enter a ship, click this until it works. Works just like Gravity Hull!", Command = "ghd_fixcamera"})
 end
 --Designate Hull
+
 function TOOL:LeftClick(tr)
 	local ent = tr.Entity
 	local noconstraints = self:GetClientNumber("entireset")
@@ -45,7 +47,11 @@ function TOOL:LeftClick(tr)
 	else
 		GravHull.UpdateHull(ent)
 	end
-	if not (noconstraints) then self:GetOwner():ChatPrint("You created a local physics hull!") else self:GetOwner():ChatPrint("You created a local physics system!") end
+	if not (noconstraints) then
+		self:GetOwner():ChatPrint("You created a local physics system!")
+	else
+		self:GetOwner():ChatPrint("You created a local physics hull!")
+	end
 	return true
 end
 --Remove Hull
@@ -68,5 +74,46 @@ function TOOL:Reload(tr)
 	//idk this is for later
 end
 function TOOL:Think(tr)
+<<<<<<< HEAD
+
+end
+--[[ Shitty way of doing halos. Please improve. -Bull
+local gravhulldEntities = {}
+
+net.Receive( "broadcastEntityAdded", function()
+	local entityAdded = net.ReadEntity()
+	funtable = net.ReadTable()
+
+	table.insert( gravhulldEntities, entityAdded)
+end)
+
+net.Receive( "broadcastEntityRemoved", function()
+	local entityRemoved = net.ReadEntity()
+	entityRemoved = net.ReadEntity()
+	if(table.HasValue( gravhulldEntities, entityRemoved )) then
+		table.remove(gravhulldEntities,table.HasValue( gravhulldEntities, entityRemoved ))
+	end
+end)
+
+function isGravHalo() -- Can't call this in Tool:Think, else rip frames
+	if(CLIENT) then
+	if(self:GetClientNumber("entireset")==0) then
+		if(LocalPlayer():GetTool("localphysics") and LocalPlayer():GetActiveWeapon():GetClass()=="gmod_tool") then
+		local trace = LocalPlayer():GetEyeTrace()
+			for k, v in pairs(gravhulldEntities) do
+				if (v==trace.Entity and not trace.Entity:IsPlayer() and not trace.Entity:IsVehicle() and not trace.Entity:IsNPC()) then
+					halo.Add( {trace.Entity}, Color(0,255,0), 2, 2, 1, true, false )
+				elseif(trace.Entity and v!=trace.Entity and not trace.Entity:IsPlayer() and not trace.Entity:IsVehicle() and not trace.Entity:IsNPC()) then
+					halo.Add( {trace.Entity}, Color(255,0,0), 2, 2, 1, true, false )
+				end
+			end
+		end
+	end
+end
+end
+hook.Remove("PreDrawHalos","gravhalo")
+]]
+=======
 	//idk this is for later
 end
+>>>>>>> origin/master
