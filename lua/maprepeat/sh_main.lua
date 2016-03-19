@@ -11,6 +11,7 @@ function MapRepeat.CellToArray(cell) -- Get values from the cell
 	return c
 end
 local srv_genned = {}
+<<<<<<< HEAD
 function MapRepeat.GenCell(cell) -- Generate the cell!
 	if !cell then return end
 	local c = MapRepeat.CellToArray(cell) -- Get the values from the cell
@@ -18,6 +19,21 @@ function MapRepeat.GenCell(cell) -- Generate the cell!
 	if MapRepeat.Cells[cell].gen then return end -- If the cell is labelled as generated, ignore it
 	MapRepeat.Cells[cell].gen = true -- Label the cell as generated (stop the cell from being genned again)
 	for e,t in pairs(MapRepeat.RGen) do -- For all of the entities, run RGen
+=======
+function MapRepeat.GenCell(cell) -- GENCELL
+	--print("Generating cell")
+	
+	if !cell then 
+		--print("Cell invalid!")
+		return
+	end
+	
+	local c = MapRepeat.CellToArray(cell)
+	MapRepeat.Cells[cell] = MapRepeat.Cells[cell] or {}
+	if MapRepeat.Cells[cell].gen then return end
+	MapRepeat.Cells[cell].gen = true
+	for e,t in pairs(MapRepeat.RGen) do
+>>>>>>> origin/master
 		for k,v in pairs(t) do
 			if type(v) == 'table' then -- If the value is a table (which we want)
 				local pass = true -- Random variable that only superllama knows about #1
@@ -37,6 +53,7 @@ function MapRepeat.GenCell(cell) -- Generate the cell!
 						p[i] = true -- Set random table that only superllama knows about to true
 					end 
 				end
+<<<<<<< HEAD
 				if	pass and -- If random variable that only superllama knows about #1 is true/more than 0
 				    ((v[1] == c[1]) or (v[1] == '?') or p[1]) and -- If X is a number, ?, or percent
 					((v[2] == c[2]) or (v[2] == '?') or p[2]) and -- If Y is a number, ?, or percent
@@ -48,6 +65,20 @@ function MapRepeat.GenCell(cell) -- Generate the cell!
 						if SERVER and e and e != NULL then 
 							e.Cells = e.Cells or {} -- Script error prevention
 							e.Cells[#e.Cells+1] = cell -- Go to next index.
+=======
+				if	pass and 
+				    ((v[1] == c[1]) or (v[1] == '?') or p[1]) and
+					((v[2] == c[2]) or (v[2] == '?') or p[2]) and
+					((v[3] == c[3]) or (v[3] == '?') or p[3]) then
+					if send then
+						--print("Adding cell")
+						MapRepeat.AddCell(e,cell)
+					else
+						MapRepeat.Cells[cell][e] = true
+						if SERVER and e and e != NULL then
+							e.Cells = e.Cells or {}
+							e.Cells[#e.Cells+1] = cell
+>>>>>>> origin/master
 						end
 					end
 				end
@@ -68,15 +99,15 @@ function MapRepeat.InCell(e,cell) --  Is this ent in this cell?
 end
 function MapRepeat.CellToPos(_pos,cell) -- Get what cell the position is in
 	local pos = _pos
-	local c = MapRepeat.CellToArray(cell)
-	if !c then return pos end
+	local c2 = MapRepeat.CellToArray(cell)
+	if !c2 then return pos end
 	local s = MapRepeat.Sync
 	local cx = (s.right or 0) - (s.left or 0)
 	local cy = (s.bottom or 0) - (s.top or 0)
 	local cz = (s.up or 0) - (s.down or 0)
-	pos.x = pos.x + (cx * (tonumber(c[1]) or 0))
-	pos.y = pos.y + (cy * (tonumber(c[2]) or 0))
-	pos.z = pos.z + (cz * (tonumber(c[3]) or 0))
+	pos.x = pos.x + (cx * (tonumber(c2[1]) or 0))
+	pos.y = pos.y + (cy * (tonumber(c2[2]) or 0))
+	pos.z = pos.z + (cz * (tonumber(c2[3]) or 0))
 	return pos
 end
 function MapRepeat.PosToCell(_pos,_pos2) -- Get the position relative to the cell
@@ -115,9 +146,9 @@ function util.TraceLine(_tr) -- Override for TraceLine
 	end
 	local tr,cell = _tr,nil
 	local s = MapRepeat.Sync
-	cell,tr.start,tr.endpos = MapRepeat.PosToCell(tr.start,tr.endpos)
+	cell = MapRepeat.PosToCell(tr.start,tr.endpos)
 	for _,e in pairs(ents.GetAll()) do
-		if !MapRepeat.InCell(e,cell) && (CLIENT or e:GetMoveType() != MOVETYPE_NONE) then
+		if !MapRepeat.InCell(e,cell) and (CLIENT or e:GetMoveType() != MOVETYPE_NONE) then
 			if type(tr.filter) != 'table' then tr.filter = {tr.filter} end
 			tr.filter[#tr.filter+1] = e
 		end
@@ -127,6 +158,7 @@ function util.TraceLine(_tr) -- Override for TraceLine
 	tro.StartPos = tr.start
 	return tro
 end
+<<<<<<< HEAD
 
 --
 -- WE NEED MORE UTIL TRACES SIR, WE NEED MORE.
@@ -177,3 +209,5 @@ function util.TraceHull(th)
 	tho.StartPos = th.start
 	return tho
 end*/
+=======
+>>>>>>> origin/master

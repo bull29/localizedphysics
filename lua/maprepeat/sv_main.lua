@@ -1,17 +1,30 @@
+<<<<<<< HEAD
 util.AddNetworkString("maprepeat_num")
 util.AddNetworkString("maprepeat_space")
+=======
+
+util.AddNetworkString("maprepeat_num")
+>>>>>>> origin/master
 util.AddNetworkString("maprepeat_rgen")
 util.AddNetworkString("maprepeat_setcell")	
 util.AddNetworkString("maprepeat_cell")
 util.AddNetworkString("maprepeat_install")
 util.AddNetworkString("maprepeat_uninstall")
+<<<<<<< HEAD
 local function maprepeat_num(k,v,p) -- Sends info_maprepeat info to client
 	if !IsValid(p) then return end
 	net.Start("maprepeat_num",p)
+=======
+
+local function maprepeat_num(k,v,p)
+	if !IsValid(p) then return end
+	net.Start("maprepeat_num")
+>>>>>>> origin/master
 		net.WriteString(k)
 		net.WriteFloat(v)
 	net.Send(p)
 end
+<<<<<<< HEAD
 local function maprepeat_rgen(e,t,p) -- Random Generation data
 	if !e or e == NULL or !IsEntity(e) or !IsValid(p) then return end
 	net.Start("maprepeat_rgen")
@@ -20,6 +33,16 @@ local function maprepeat_rgen(e,t,p) -- Random Generation data
 		net.WriteInt(t.r or 0,16) -- Sends (???) to client
 		for k,v in pairs(t) do
 			if type(v) == 'table' then -- COME BACK TO THIS!
+=======
+local function maprepeat_rgen(e,t,p)
+	if !e or e == NULL or !IsEntity(e) then return end
+	net.Start("maprepeat_rgen")
+		net.WriteInt(e:EntIndex(), 16)
+		net.WriteInt(#t, 16)
+		net.WriteInt(t.r or 0, 16)
+		for k,v in pairs(t) do
+			if type(v) == 'table' then
+>>>>>>> origin/master
 				net.WriteString(v[1] or "?")
 				net.WriteString(v[2] or "?")
 				net.WriteString(v[3] or "?")
@@ -36,9 +59,15 @@ end
 local function maprepeat_cell(ent,cell,set,p) -- Send cell data to client
 	if !ent or ent == NULL or !IsEntity(ent) then return end
 	net.Start((set and "maprepeat_setcell" or "maprepeat_cell"))
+<<<<<<< HEAD
 		net.WriteInt(ent:EntIndex(),16) -- Send entities to client
 		net.WriteString(cell or "0 0 0") -- Send what cell the client is in to the client
 	if(IsValid(p)) then -- If the player is valid, send it to them. If not, send it to everyone.
+=======
+		net.WriteInt(ent:EntIndex(), 16)
+		net.WriteString(cell or "0 0 0")
+	if(IsValid(p)) then
+>>>>>>> origin/master
 		net.Send(p)
 	else
 		net.Broadcast()
@@ -58,7 +87,12 @@ function MapRepeat.InstallHooks() -- Tells all clients to install hooks
 		end
 	end
 	MapRepeat.Installed = true
+<<<<<<< HEAD
 	net.Start("maprepeat_install"); net.Broadcast()
+=======
+	net.Start("maprepeat_install")
+	net.Broadcast()
+>>>>>>> origin/master
 end
 function MapRepeat.SetNumber(k,v) -- Sends info_maprepeat info to client
 	if !v then return end
@@ -68,13 +102,22 @@ end
 function MapRepeat.SetRGen(ent,tbl) -- Sets up the table for RGen
 	MapRepeat.RGen[ent] = tbl
 	maprepeat_rgen(ent,tbl)
+	--print("Setting RGen")
 end
 function MapRepeat.AddCell(ent,cell) -- Add a cell serverside
 	if ent == NULL then return end
+<<<<<<< HEAD
 	MapRepeat.Cells[cell] = MapRepeat.Cells[cell] or {} -- Script error prevention
 	MapRepeat.Cells[cell][ent] = true -- The ent is in this cell
 	ent.Cells = ent.Cells or {} -- Script error prevention
 	ent.Cells[#ent.Cells+1] = cell -- Next index
+=======
+	--print("Adding a cell")
+	MapRepeat.Cells[cell] = MapRepeat.Cells[cell] or {}
+	MapRepeat.Cells[cell][ent] = true
+	ent.Cells = ent.Cells or {}
+	ent.Cells[#ent.Cells+1] = cell
+>>>>>>> origin/master
 	maprepeat_cell(ent,cell)
 end
 function MapRepeat.SetCell(ent,cell) -- Sets the cell for ShouldCollide and everything
@@ -106,9 +149,15 @@ function MapRepeat.SetCell(ent,cell) -- Sets the cell for ShouldCollide and ever
 	end
 	--
 end
+<<<<<<< HEAD
 function MapRepeat.PlayerData(ply) -- Sets everything up for the player
 	net.Start("maprepeat_install",ply); net.Send(ply)
 	maprepeat_space(SPACE,ply) -- Tell the player about where space is
+=======
+function MapRepeat.PlayerData(ply)
+	net.Start("maprepeat_install")
+	net.Send(ply)
+>>>>>>> origin/master
 	for k,v in pairs(MapRepeat.Sync or {}) do maprepeat_num(k,v,ply) end
 	for k,v in pairs(MapRepeat.RGen or {}) do maprepeat_rgen(k,v,ply) end
 	for c,t in pairs(MapRepeat.Cells or {}) do 
@@ -181,6 +230,9 @@ end
 concommand.Add("sl_mr_gencell",function(p,c,a)
 	MapRepeat.GenCell(a[1]) -- Don't worry about this.
 end)
+concommand.Add("sl_mr_gotocell",function(ply,command,args)
+	MapRepeat.SetCell(ply,args[1])
+end)
 MapRepeat.AddHook("ShouldCollide","SL_MRCollide",function(e1,e2)
 	if e1.InShip or e2.InShip then return end
 	if !MapRepeat.SameCell(e1,e2) then return false end -- If they're not in the same cell, don't let them collide.
@@ -215,6 +267,7 @@ end
 hook.Add("InitPostEntity","MR_IPE",function() -- After entities are created
 	if !MapRepeat.Installed then -- If MapRepeat's uninstalled, tell the client to uninstall it as well.
 		MapRepeat = nil 
+<<<<<<< HEAD
 		net.Start("maprepeat_uninstall"); net.Broadcast();
 		hook.Add("PlayerInitialSpawn","SL_NoMR",function(ply)
 			net.Start("maprepeat_uninstall"); net.Send(ply);
@@ -254,6 +307,36 @@ hook.Add("EntityKeyValue","MR_KVH",function(ent,k,v) -- Gets values inputted int
 	end
 	if #rep > 0 then -- If there are ? or %
 		MapRepeat.SetRGen(ent,rep) -- Run RGen on the ent
+=======
+		net.Start("maprepeat_uninstall")
+		net.Broadcast();
+		hook.Add("PlayerInitialSpawn","SL_NoMR",function(ply)
+			net.Start("maprepeat_uninstall")
+			net.Send(ply);
+		end)
+	else
+		MapRepeat.GenCell("0 0 0")
+		--print("Generating cell 0,0,0")
+	end
+end)
+hook.Add("EntityKeyValue","MR_KVH",function(ent,k,v)
+	local rep = {}
+	--print("Called EntityKeySetValue")
+	if string.sub(k,1,4) == 'cell' then
+		local i = string.sub(k,5) 
+		local c = v
+		if string.find(c,'?') or string.find(c,'%%') then 
+			local ct = MapRepeat.CellToArray(c)
+			rep[#rep+1] = ct
+		else
+			MapRepeat.AddCell(ent,c)
+			--print("Adding a cell")
+		end
+	end 
+	if #rep > 0 then
+		--print("Setting RGen 1")
+		MapRepeat.SetRGen(ent,rep)
+>>>>>>> origin/master
 	end
 end)
 local PHYS = FindMetaTable("PhysObj")

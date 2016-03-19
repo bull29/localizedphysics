@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 //NOTE: MAP REPEATER IS AN UNSTABLE PROTOTYPE. USE AT YOUR OWN RISK BY UNCOMMENTING THE FOLLOWING LINE:
 local AllowMapRepeat = true
+=======
+//NOTE: MAP REPEATER IS AN UNSTABLE PROTOTYPE. USE AT YOUR OWN RISK BY MAKING TRUE THE FOLLOWING LINE:
+AllowMapRepeat = true
+>>>>>>> origin/master
 
 
 include("gravityhull/init.lua")

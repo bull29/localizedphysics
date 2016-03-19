@@ -28,7 +28,7 @@ local draw_with_effect = kv_swap{
 	"gmod_turret",
 }
 ------------------------------------------------------------------------------------------
--- Name: AddPropIds
+-- Name: AddPropId
 -- Desc: Called when a contents usermessage is recieved; waits until the entity indices are valid
 ------------------------------------------------------------------------------------------
 local function AddPropIds(tab,enti,shipi,ghosti,times)
@@ -189,7 +189,7 @@ GH.DoCalcView = function(ply,pos,ang,fov,nearz,farz,nope)
 	end,ErrorNoHalt)
 	if apply then
 		if method == 0 then
-			return view//GAMEMODE:CalcView(ply,pos,ang,fov)
+			return view
 		elseif method == 1 then
 			return GAMEMODE:CalcView(ply,view.origin,view.angles,fov,nearz,farz)
 		end
@@ -365,8 +365,13 @@ hook.Add("Think","SLWaterCheck",function()
     else
 		if wasinship then
             for k,v in pairs(bmat) do
+<<<<<<< HEAD
 				v:SetInt("$fogstart",fogs[k.."s"] or 500)
                 v:SetInt("$fogend",fogs[k.."e"] or 1000)
+=======
+                v:SetInt("$fogstart",fogs[k.."s"] or 0)
+                v:SetInt("$fogend",fogs[k.."e"] or 0)
+>>>>>>> origin/master
             end
         end
         wasinship = false
