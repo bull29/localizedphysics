@@ -90,18 +90,20 @@ function MapRepeat.SetCell(ent,cell) -- Sets the cell for an entity
 
 	-- Space stuff!
 	local cellz = tonumber(string.sub(cell,5),10) -- Gets the z value of the cell (gets the 1 out of 0 0 1)
-	local phys = ent:GetPhysicsObject() -- Get the physics of the object
-	if (IsValid(phys) and !ent:IsPlayer() and ent:GetClass() != "prop_combine_ball") then
-		if(SPACE and cellz >= tonumber(SPACE)) then -- If you're above the threshold
-			phys:EnableGravity(false) -- Disable gravity
-		elseif(SPACE and cellz < tonumber(SPACE)) then -- If you're below
-			phys:EnableGravity(true) -- Enable gravity
-		end
-	elseif(ent:IsPlayer()) then
-		if(SPACE and cellz >= tonumber(SPACE)) then -- If you're above the threshold
-			ent:SetGravity(0.0001) -- Disable gravity
-		elseif(SPACE and cellz < tonumber(SPACE)) then -- If you're below
-			ent:SetGravity(1) -- Enable gravity
+	if(cellz and SPACE) then
+		local phys = ent:GetPhysicsObject() -- Get the physics of the object
+		if (IsValid(phys) and !ent:IsPlayer() and ent:GetClass() != "prop_combine_ball") then
+			if(cellz >= tonumber(SPACE)) then -- If you're above the threshold
+				phys:EnableGravity(false) -- Disable gravity
+			elseif(ellz < tonumber(SPACE)) then -- If you're below
+				phys:EnableGravity(true) -- Enable gravity
+			end
+		elseif(ent:IsPlayer()) then
+			if(SPACE and cellz >= tonumber(SPACE)) then -- If you're above the threshold
+				ent:SetGravity(0.0001) -- Disable gravity
+			elseif(cellz < tonumber(SPACE)) then -- If you're below
+				ent:SetGravity(1) -- Enable gravity
+			end
 		end
 	end
 	--
