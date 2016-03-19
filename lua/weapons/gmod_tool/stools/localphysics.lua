@@ -74,7 +74,6 @@ function TOOL:Reload(tr)
 	//idk this is for later
 end
 function TOOL:Think(tr)
-<<<<<<< HEAD
 
 end
 --[[ Shitty way of doing halos. Please improve. -Bull
