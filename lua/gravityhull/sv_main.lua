@@ -191,7 +191,7 @@ end
 -- Name: UpdateHull
 -- Desc: Create or update a gravity hull's ghost, including moving parts.
 ------------------------------------------------------------------------------------------
-function GH.UpdateHull(ent,gravnormal)
+function GH.UpdateHull(ent,contraption,gravnormal)
 	if !(IsValid(ent) and GH.SHIPS[ent]) then return end
 	local xcon = GH.ConstrainedEntities(ent) --this is just for the update check
 	local gents = GH.SHIPS[ent].Ghosts
@@ -204,7 +204,7 @@ function GH.UpdateHull(ent,gravnormal)
 	--Adds any prop connected solidly to ent as part of its hull,
 	--and any prop connected with a nonsolid constraint to the parts list.
 	--Also adds other constrained hulls as special parts.
-	if ent.Constraints then
+	if ent.Constraints && contraption == 1 then
 		while #tbtab > 0 do
 			local bd = tbtab[#tbtab]
 			local bde = bd[1]
