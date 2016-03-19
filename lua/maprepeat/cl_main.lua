@@ -118,7 +118,7 @@ function MapRepeat.DrawCell(x,y,z) -- Render the cell on our screen!
 		end
 	cam.End3D()
 end
-MapRepeat.AddHook("PostDraw2DSkyBox","DR_MRSkybox",function() -- Rendering space
+/*MapRepeat.AddHook("PostDraw2DSkyBox","DR_MRSkybox",function() -- Rendering space
 	if !MapRepeat.Space then return end
 	local fogmode = render.GetFogMode() -- If there's fog, save it
 	local pl = LocalPlayer() -- The client!
@@ -143,7 +143,7 @@ MapRepeat.AddHook("PostDraw2DSkyBox","DR_MRSkybox",function() -- Rendering space
 	elseif(fogmode) then -- If we're not in space and the map has fog
 		render.FogMode(fogmode) -- Return it!
 	end
-end)
+end)*/
 local ignored_ents = {}
 ignored_ents["viewmodel"] = true
 ignored_ents["class CLuaEffect"] = true
