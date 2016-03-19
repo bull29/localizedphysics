@@ -343,7 +343,7 @@ function GH.FindNowhere(rad)
 	--local skycam = ents.FindByClass("sky_camera")[1]
 	--if IsValid(skycam) then skycam = skycam:GetRealPos() else skycam = nil end
 	while !((util.PointContents(nowhere) == CONTENTS_EMPTY or util.PointContents(nowhere) == CONTENTS_TESTFOGVOLUME) and 
-			!util.TraceHull{start=nowhere,endpos=nowhere,mins=Vector(1,1,1)*-rad,maxs=Vector(1,1,1)*rad,mask = MASK_SOLID + CONTENTS_WATER}.Hit and --HIT EVERYTHING
+			!util.RealTraceHull{start=nowhere,endpos=nowhere,mins=Vector(1,1,1)*-rad,maxs=Vector(1,1,1)*rad,mask = MASK_SOLID + CONTENTS_WATER}.Hit and --HIT EVERYTHING
 			hook.Call("AllowGhostSpot",nil,nowhere,rad) != false)do--and (!skycam or util.RealTraceLine{start=nowhere,endpos=skycam,mask=MASK_NPCWORLDSTATIC}.Hit)) do
 		nowhere = Vector(math.random(-16384,16384),math.random(-16384,16384),math.random(-16384,16384))
 	end
