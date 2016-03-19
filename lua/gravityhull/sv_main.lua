@@ -2,6 +2,9 @@ util.AddNetworkString("sl_ship_object")
 util.AddNetworkString("sl_ship_explosion")
 util.AddNetworkString("sl_antiteleport_cl")
 util.AddNetworkString("sl_fake_tooltrace")
+util.AddNetworkString("broadcastEntityAdded")
+util.AddNetworkString("broadcastEntityRemoved")
+
 local GH = GravHull
 include('sh_codetools.lua')
 GH.HULLS = {} --contains all hull props, used to stop multiple designations
@@ -43,6 +46,10 @@ function GH.UnHull(ent)
 			e:Remove()
 		end
 	end
+	--[[net.Start("broadcastEntityRemoved")
+	net.WriteEntity(ent)
+	net.Broadcast()]]-- For My shitty Halos -Bull
+
 	GH.SHIPS[ent] = nil
 end
 ------------------------------------------------------------------------------------------
@@ -185,12 +192,17 @@ end
 ------------------------------------------------------------------------------------------
 function GH.RegisterHull(ent,vpf,grav)
 	GravHull.SHIPS[ent] = {Hull = {}, Ghosts = {}, Contents = {}, Parts = {}, FloorDist = vpf, Gravity = grav}
+	--[[net.Start("broadcastEntityAdded") For Halos.
+	net.WriteEntity(ent)
+	net.WriteTable(GravHull.SHIPS[ent])
+	net.Broadcast()]]--
 end
 ------------------------------------------------------------------------------------------
 -- Name: UpdateHull
 -- Desc: Create or update a gravity hull's ghost, including moving parts.
 ------------------------------------------------------------------------------------------
-function GH.UpdateHull(ent,gravnormal,includeConstraints)
+function GH.UpdateHull(ent,gravnormal,includeconstraints)
+	print(includeconstraints)
 	if !(IsValid(ent) and GH.SHIPS[ent]) then return end
 	local xcon = GH.ConstrainedEntities(ent) --this is just for the update check
 	local gents = GH.SHIPS[ent].Ghosts
@@ -203,7 +215,9 @@ function GH.UpdateHull(ent,gravnormal,includeConstraints)
 	--Adds any prop connected solidly to ent as part of its hull,
 	--and any prop connected with a nonsolid constraint to the parts list.
 	--Also adds other constrained hulls as special parts.
-	if ent.Constraints && includeConstraints == 1 then -- Thanks Bull
+	if(includeconstraints==1) then
+		print("INCLUDINGCONSTRAINTS")
+	if ent.Constraints then
 		while #tbtab > 0 do
 			local bd = tbtab[#tbtab]
 			local bde = bd[1]
@@ -265,6 +279,8 @@ function GH.UpdateHull(ent,gravnormal,includeConstraints)
 			welds[k]=nil
 		end
 	end
+	
+	end
 	local pos = vector_origin
 	local rad = 0
 	local amt = 0
@@ -274,6 +290,7 @@ function GH.UpdateHull(ent,gravnormal,includeConstraints)
 			amt = amt + 1
 		end
 	end
+
 	if amt > 0 then pos = pos / amt end
 	for _,p in pairs(welds) do
 		if IsValid(p) then
@@ -297,6 +314,7 @@ function GH.UpdateHull(ent,gravnormal,includeConstraints)
 			GH.DisablePhysGhost(e,e.SLMyGhost)
 		end
 	end
+
 	if !IsValid(GH.SHIPS[ent].MainGhost) then
 		local mg = ents.Create("prop_physics")
 		GH.GhostSetup(ent,ent,mg,npos,gravnormal)
@@ -338,7 +356,7 @@ function GH.FindNowhere(rad)
 	--local skycam = ents.FindByClass("sky_camera")[1]
 	--if IsValid(skycam) then skycam = skycam:GetRealPos() else skycam = nil end
 	while !((util.PointContents(nowhere) == CONTENTS_EMPTY or util.PointContents(nowhere) == CONTENTS_TESTFOGVOLUME) and 
-			!util.RealTraceHull{start=nowhere,endpos=nowhere,mins=Vector(1,1,1)*-rad,maxs=Vector(1,1,1)*rad,mask = MASK_SOLID + CONTENTS_WATER}.Hit and --HIT EVERYTHING
+			!util.TraceHull{start=nowhere,endpos=nowhere,mins=Vector(1,1,1)*-rad,maxs=Vector(1,1,1)*rad,mask = MASK_SOLID + CONTENTS_WATER}.Hit and --HIT EVERYTHING
 			hook.Call("AllowGhostSpot",nil,nowhere,rad) != false)do--and (!skycam or util.RealTraceLine{start=nowhere,endpos=skycam,mask=MASK_NPCWORLDSTATIC}.Hit)) do
 		nowhere = Vector(math.random(-16384,16384),math.random(-16384,16384),math.random(-16384,16384))
 	end
