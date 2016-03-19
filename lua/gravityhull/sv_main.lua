@@ -202,7 +202,7 @@ end
 -- Desc: Create or update a gravity hull's ghost, including moving parts.
 ------------------------------------------------------------------------------------------
 function GH.UpdateHull(ent,gravnormal,includeconstraints)
-	print(includeconstraints)
+
 	if !(IsValid(ent) and GH.SHIPS[ent]) then return end
 	local xcon = GH.ConstrainedEntities(ent) --this is just for the update check
 	local gents = GH.SHIPS[ent].Ghosts
