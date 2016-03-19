@@ -35,8 +35,104 @@ end
 
 ------------------------------------------------------------------------------------------
 -- Name: FireBullets
--- Desc: Also fire bullets from the physghost.
+-- Desc: It's a hook now! Useless!
 ------------------------------------------------------------------------------------------
+GH.EntityFireBullets = function(self,tbl)
+	if !GH.BulletGhost then
+		if SERVER then
+			GH.BulletGhost = ents.Create("prop_physics")
+		else
+			GH.BulletGhost = ents.CreateClientProp()
+		end
+		GH.BulletGhost:SetColor(Color(0,0,0,1))
+		GH.BulletGhost:SetNoDraw(true)
+		GH.BulletGhost:Spawn()
+		if SERVER then GH.BulletGhost:GetPhysicsObject():EnableCollisions(false) end
+	end
+	local data,s,g
+	if SERVER then
+		if self:IsWeapon() and IsValid(self:GetOwner()) and self:GetOwner().InShip then
+			s = self:GetOwner().InShip
+			data = GH.SHIPS[self:GetOwner().InShip]
+		elseif self.InShip or self.MyShip then
+			s = self.InShip
+			data = GH.SHIPS[self.InShip or self.MyShip]
+		end
+		if data then g = data.MainGhost end
+	else
+		if self:IsWeapon() and IsValid(self:GetOwner()) and GH.SHIPCONTENTS[self:GetOwner()] then
+			data = GH.SHIPCONTENTS[self:GetOwner()]
+		elseif GH.SHIPCONTENTS[self] then
+			data = GH.SHIPCONTENTS[self]
+		end
+		if data then
+			s = data.S
+			g = data.G
+		end
+	end
+	if (IsValid(s) && IsValid(g)) then
+		local ttbl = table.Copy(tbl)
+		local rtran = false
+		if tbl.Src:Distance(self:GetPos())/2 < ((self:IsWeapon() and self:GetOwner():BoundingRadius()) or self:BoundingRadius()) then
+			s,g = g,s
+			rtran = true
+		end
+		--src transform
+		local pos,ang = WorldToLocal(ttbl.Src,Angle(0,0,0),g.RealPos or g:GetRealPos(),g.RealAng or g:GetRealAngles())
+		pos,ang = LocalToWorld(pos,ang,s.RealPos or s:GetRealPos(),s.RealAng or s:GetRealAngles())
+		ttbl.Src = pos
+		--dir transform
+		pos,ang = WorldToLocal(ttbl.Dir,Angle(0,0,0),vector_origin,g.RealAng or g:GetRealAngles())
+		pos,ang = LocalToWorld(pos,ang,vector_origin,s.RealAng or s:GetRealAngles())
+		ttbl.Dir = pos		
+		if SERVER and !game.SinglePlayer() then tbl.Tracer, ttbl.Tracer = nil, nil end
+		if rtran then
+			tbl.Attacker = (tbl.Attacker or (IsValid(self:GetOwner()) and self:GetOwner()) or self)
+			if SERVER then
+				GH.BulletGhost:SetRealPos(tbl.Src)
+			else
+				GH.BulletGhost:SetPos(ttbl.Src)
+			end
+			GH.BulletGhost.Inflictor = (self:IsPlayer() and self:GetActiveWeapon()) or self
+			GH.BulletGhost:RealFireBullets(tbl)
+			self:RealFireBullets(ttbl)
+		else
+			ttbl.Attacker = (ttbl.Attacker or (IsValid(self:GetOwner()) and self:GetOwner()) or self)
+			if SERVER then
+				GH.BulletGhost:SetRealPos(ttbl.Src)
+			else
+				GH.BulletGhost:SetPos(ttbl.Src)
+			end
+			GH.BulletGhost.Inflictor = (self:IsPlayer() and self:GetActiveWeapon()) or self
+			GH.BulletGhost:RealFireBullets(ttbl)
+			self:RealFireBullets(tbl)
+		end
+	else
+		self:RealFireBullets(tbl)
+		if SERVER then
+			local tr = util.RealTraceLine{start = tbl.Src, endpos = tbl.Src + tbl.Dir*16384, filter = self}
+			if !IsValid(tr.Entity) then return end
+			local ship = ((GH.PHYSGHOSTS[tr.Entity] and GH.PHYSGHOSTS[tr.Entity].InShip) or (tr.Entity.Ghost and tr.Entity.Ghost.MyShip))
+			if GH.SHIPS[ship] then
+				local ttbl = table.Copy(tbl)
+				local ghost = GH.SHIPS[ship].MainGhost
+				--src transform
+				local pos,ang = WorldToLocal(ttbl.Src,Angle(0,0,0),ship:GetPos(),ship:GetAngles())
+				pos,ang = LocalToWorld(pos,ang,ghost:GetRealPos(),ghost:GetRealAngles())
+				ttbl.Src = pos
+				--dir transform
+				pos,ang = WorldToLocal(ttbl.Dir,Angle(0,0,0),vector_origin,ship:GetAngles())
+				pos,ang = LocalToWorld(pos,ang,vector_origin,ghost:GetRealAngles())
+				ttbl.Dir = pos
+				if !game.SinglePlayer() then ttbl.Tracer = nil end
+				ttbl.Attacker = (ttbl.Attacker or (IsValid(self:GetOwner()) and self:GetOwner()) or self)
+				GH.BulletGhost:SetRealPos(ttbl.Src)
+				GH.BulletGhost.Inflictor = (self:IsPlayer() and self:GetActiveWeapon()) or self
+				GH.BulletGhost:RealFireBullets(ttbl)
+			end
+		end
+	end
+end
 
 ------------------------------------------------------------------------------------------
 -- Name: GetPos
@@ -185,8 +281,9 @@ end
 ents.FindInSphere = function(vec,rad)
 	local out = {}
 	for _,e in pairs(ents.GetAll()) do
-		if IsValid(e) and e:GetPos():Distance(vec) <= rad and !e.SLIsGhost then
+		if IsValid(e) and e:GetPos():Distance(vec) <= tonumber(rad) and !e.SLIsGhost then
 			out[#out+1] = e
+			--print(table.ToString(out,"test",1))
 		end
 	end
 	return out

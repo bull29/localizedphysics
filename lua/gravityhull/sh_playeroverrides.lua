@@ -48,7 +48,7 @@ end*/
 -- Name: util.TraceLine
 -- Desc: Currently disabled...
 ------------------------------------------------------------------------------------------
-/*
+
 util.TraceLine = function(tab)
 	local tr = util.RealTraceLine(tab)
 xpcall(function()
@@ -68,7 +68,7 @@ xpcall(function()
 	end
 end,ErrorNoHalt)
 	return tr
-end*/
+end
 
 ------------------------------------------------------------------------------------------
 -- Name: util.GetPlayerTrace

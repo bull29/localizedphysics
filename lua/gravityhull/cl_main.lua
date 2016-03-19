@@ -57,15 +57,15 @@ end
 -- Name: sl_ship_object
 -- Desc: The hull/contents usermessage, basically gives the client data about ships
 ------------------------------------------------------------------------------------------
-usermessage.Hook("sl_ship_object",function(um) --this is how the server tells us which entities are "contained"
-	local enti,yes,hull = um:ReadShort(),um:ReadBool(),um:ReadBool()
+net.Receive("sl_ship_object",function(um) --this is how the server tells us which entities are contained"
+	local enti,yes,hull = net.ReadInt(16),net.ReadBool(),net.ReadBool()
 	local tab = GH.SHIPCONTENTS
 	if hull then tab = GH.GHOSTHULLS end
 	if yes and hull then
-		local shipi,ghosti = um:ReadShort(),um:ReadShort()
+		local shipi,ghosti = net.ReadInt(16),net.ReadInt(16)
 		AddHullIds(tab,enti,shipi,ghosti,0)
 	elseif yes then
-		local shipi,ghosti = um:ReadShort(),um:ReadShort()
+		local shipi,ghosti = net.ReadInt(16),net.ReadInt(16)
 		AddPropIds(tab,enti,shipi,ghosti,0)
 	else
 		local ent = Entity(enti)
@@ -73,6 +73,12 @@ usermessage.Hook("sl_ship_object",function(um) --this is how the server tells us
 			if ent.RealColor or ent.WasHidden then
 				ent:SetColor(ent.RealColor or Color(255,255,255,255))
 				if ent:GetColor().a == 0 then ent:SetColor(Color(255,255,255,255)) end
+				
+				if(ent.GetActiveWeapon and IsValid(ent:GetActiveWeapon())) then -- When a player leaves the hull, reset their weapons to be visible
+					ent:GetActiveWeapon():SetColor(Color(255,255,255,255)) 
+					ent:GetActiveWeapon():SetRenderMode(RENDERMODE_NORMAL)
+				end	
+				
 			end
 			if (ent == LocalPlayer()) then
 				ent.RollCorrection = true
@@ -85,9 +91,9 @@ end)
 -- Name: sl_ship_explosion
 -- Desc: The explosion usermessage, used
 ------------------------------------------------------------------------------------------
-usermessage.Hook("sl_ship_explosion",function(um)
+net.Receive("sl_ship_explosion",function(um)
 	local ed = EffectData()
-	local pos = um:ReadVector()
+	local pos = net.ReadVector()
 	ed:SetStart(pos)
 	ed:SetOrigin(pos)
 	util.Effect("Explosion",ed)
@@ -101,8 +107,8 @@ end)
 -- Name: sl_antiteleport_cl
 -- Desc: Clientside portion of the anti-teleport handshake
 ------------------------------------------------------------------------------------------
-usermessage.Hook("sl_antiteleport_cl",function(um) --recieved when the player's position is set by the server, used to avoid SetPos packet loss resulting in teleporting to the sky
-	local ppos = um:ReadVector()
+net.Receive("sl_antiteleport_cl",function(um) --recieved when the player's position is set by the server, used to avoid SetPos packet loss resulting in teleporting to the sky
+	local ppos = net.ReadVector()
 	if (LocalPlayer():GetRealPos():Distance(ppos) > 3000) then
 		RunConsoleCommand("sl_antiteleport")
 	end
@@ -142,13 +148,13 @@ local cvt = CreateClientConVar("ghd_cameramethod",0,true,false)
 -- Name: DoCalcView
 -- Desc: The magic calcview hook.
 ------------------------------------------------------------------------------------------
-GH.DoCalcView = function(ply,pos,ang,fov,nope)
+GH.DoCalcView = function(ply,pos,ang,fov,nearz,farz,nope)
 	local apply = false
 	local method = cvt:GetInt()
 	local view
 	if method == 0 then
 		if nope == "SLShipView" then return end
-		view = hook.Call("CalcView",GAMEMODE,ply,pos,ang,fov,"SLShipView")
+		view = hook.Call("CalcView",GAMEMODE,ply,pos,ang,fov,nearz,farz,"SLShipView")
 	elseif method == 1 then 
 		view = {origin = pos, angles = ang}
 	end
@@ -178,10 +184,6 @@ GH.DoCalcView = function(ply,pos,ang,fov,nope)
 		if data && IsValid(data.S) && IsValid(data.G) then
 			local tpos,tang = WorldToLocal(view.origin,view.angles,data.G.RealPos or data.G:GetRealPos(),data.G.RealAng or data.G:GetRealAngles())
 			view.origin,view.angles = LocalToWorld(tpos,tang,data.S:GetPos(true),data.S:GetAngles())
-			if view.vm_origin and view.vm_angles then
-				local vmpos,vmang = WorldToLocal(view.vm_origin,view.vm_angles,data.G.RealPos or data.G:GetRealPos(),data.G.RealAng or data.G:GetRealAngles())
-				view.vm_origin, view.vm_angles = LocalToWorld(vmpos,vmang,data.S:GetPos(true),data.S:GetAngles())
-			end
 			apply = true
 		end
 	end,ErrorNoHalt)
@@ -189,11 +191,36 @@ GH.DoCalcView = function(ply,pos,ang,fov,nope)
 		if method == 0 then
 			return view//GAMEMODE:CalcView(ply,pos,ang,fov)
 		elseif method == 1 then
-			return GAMEMODE:CalcView(ply,view.origin,view.angles,fov)
+			return GAMEMODE:CalcView(ply,view.origin,view.angles,fov,nearz,farz)
 		end
 	end
 end
 hook.Add("CalcView","SLShipView",GH.DoCalcView)
+
+hook.Add("CalcViewModelView", "SLViewModels", function(wep, vm, oldPos, oldAng, pos, ang, dont)
+	local ply = LocalPlayer()
+	local apply = false
+	local view = {origin = pos, angles = ang}
+	local p,a
+	xpcall(function()
+		local data = GH.SHIPCONTENTS[ply]
+		if ply:InVehicle() && IsValid(ply:GetVehicle()) then
+			data = GH.SHIPCONTENTS[ply:GetVehicle()]
+		end
+		if IsValid(SLViewEnt) then
+			data = GH.SHIPCONTENTS[SLViewEnt]
+		end
+		if data && IsValid(data.S) && IsValid(data.G) then
+			local vmpos,vmang = WorldToLocal(pos,ang,data.G.RealPos or data.G:GetRealPos(),data.G.RealAng or data.G:GetRealAngles())
+			p, a = LocalToWorld(vmpos,vmang,data.S:GetPos(true),data.S:GetAngles())
+			apply = true
+		end
+	end,ErrorNoHalt)
+	if apply then
+		return p,a
+	end
+end)
+
 local cvhook = "SLShipView"
 ------------------------------------------------------------------------------------------
 -- Name: ghd_fixcamera
@@ -203,7 +230,7 @@ concommand.Add("ghd_fixcamera",function()
 	hook.Remove("CalcView",cvhook)
 	cvhook = string.char(math.random(32,122)).."SLShipView"
 	hook.Add("CalcView",cvhook,GH.DoCalcView)
-	Msg("GHD Camera Fix attempted, try now and run again if it doesn't work.")
+	print("GHD Camera Fix attempted, try now and run again if it doesn't work.")
 end)
 ------------------------------------------------------------------------------------------
 -- Name: SLRestoreRealPos
@@ -218,7 +245,7 @@ local function SLRestoreRealPos(TABLE)
 					if ent.RealAng then ent:SetAngles(ent.RealAng) end
 					if ent.RealColor then ent:SetColor(ent.RealColor) end
 					if ent.RealRenderMode then ent:SetRenderMode(ent.RealRenderMode) end
-					if (ent.GetActiveWeapon and IsValid(ent:GetActiveWeapon())) then ent:GetActiveWeapon():SetColor(Color(255,255,255,255)) end
+					//if (ent.GetActiveWeapon and IsValid(ent:GetActiveWeapon())) then ent:GetActiveWeapon():SetColor(Color(255,255,255,255)) end
 				end
 			//end
 		end
@@ -251,7 +278,10 @@ local function SLShipContents(TABLE,UseSG,cover)
 					ent.RealColor = ent:GetColor()
 					ent.RealRenderMode = ent:GetRenderMode()
 					ent:SetRenderMode(RENDERMODE_NONE)
-					if (ent.GetActiveWeapon and IsValid(ent:GetActiveWeapon())) then ent:GetActiveWeapon():SetColor(Color(0,0,0,0)) end
+					if (ent.GetActiveWeapon and IsValid(ent:GetActiveWeapon())) then -- When a player enters a hull, set their weapons to be invisible.
+						ent:GetActiveWeapon():SetColor(Color(0,0,0,0)) 
+						ent:GetActiveWeapon():SetRenderMode(RENDERMODE_NONE)
+					end
 				elseif ent != LocalPlayer() && (ent:GetMoveType() != MOVETYPE_NONE and ent:GetBoneCount()) == 1 && !ent.WasHidden then
 					local pos,ang = ent:GetRealPos(),ent:GetRealAngles()
 					ent.RealPos = pos
@@ -284,12 +314,12 @@ end)
 -- Name: sl_fake_tooltrace
 -- Desc: Sent by the server to fake the tool trace for interrupted CanTool messages
 ------------------------------------------------------------------------------------------
-usermessage.Hook("sl_fake_tooltrace",function(um)
-	local wep = um:ReadEntity()
-	local ent = um:ReadEntity()
-	local pos = um:ReadVector()
-	local nrm = um:ReadVector()
-	local bone = um:ReadShort()
+net.Receive("sl_fake_tooltrace",function(um)
+	local wep = net.ReadEntity()
+	local ent = net.ReadEntity()
+	local pos = net.ReadVector()
+	local nrm = net.ReadVector()
+	local bone = net.ReadInt(16)
 	wep:DoShootEffect(pos,nrm,ent,bone,true)
 end)
 local warpmat = Material("effects/water_warp01")
@@ -311,15 +341,6 @@ hook.Add("Think","SLWaterCheck",function()
 			if blw then
 				bmat[blw] = bmat[blw] or Material(blw)
 				blw = bmat[blw]
-				/*
-				mtl:SetInt("$fogenable",1)
-				blw:SetInt("$fogenable",1)
-				mtl:SetInt("$fogstart",1)
-				blw:SetInt("$fogstart",1)
-				blw:SetInt("$fogend",1000000)
-				mtl:SetInt("$fogend",1000000)
-				blw:SetTexture("$normalmap",emptynrm)
-				mtl:SetTexture("$normalmap",emptynrm)*/
 				blw:SetString("$underwateroverlay","")
 			end
         end
@@ -344,8 +365,8 @@ hook.Add("Think","SLWaterCheck",function()
     else
 		if wasinship then
             for k,v in pairs(bmat) do
-                v:SetInt("$fogstart",fogs[k.."s"])
-                v:SetInt("$fogend",fogs[k.."e"])
+				v:SetInt("$fogstart",fogs[k.."s"] or 500)
+                v:SetInt("$fogend",fogs[k.."e"] or 1000)
             end
         end
         wasinship = false
