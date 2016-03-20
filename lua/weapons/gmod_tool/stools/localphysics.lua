@@ -47,6 +47,15 @@ function TOOL:LeftClick(tr)
 		GravHull.UpdateHull(ent,contraption)
 	end
 	self:GetOwner():ChatPrint("You created a local physics system!")
+	
+	undo.Create("GHD")
+		undo.SetPlayer(self:GetOwner())
+		undo.AddFunction(function(tab,arg2) 
+			GravHull.UnHull(ent) 
+		end)		
+		undo.SetCustomUndoText("Undone Gravity Hull")
+	undo.Finish()
+	
 	return true
 end
 --Remove Hull
