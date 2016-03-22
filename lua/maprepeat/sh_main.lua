@@ -137,7 +137,7 @@ if !util.RealTraceEntity then
 end
 function util.TraceEntity(te,ent)
 	if !MapRepeat then
-		util.RealTraceEntity = util.TraceEntity
+		util.TraceEntity = util.RealTraceEntity
 		return util.TraceEntity(te)
 	end
 	
