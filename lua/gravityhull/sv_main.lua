@@ -1,9 +1,11 @@
+-- This stuff is for net messages
 util.AddNetworkString("sl_ship_object")
 util.AddNetworkString("sl_ship_explosion")
 util.AddNetworkString("sl_antiteleport_cl")
 util.AddNetworkString("sl_fake_tooltrace")
+--
 
-local GH = GravHull
+local GH = GravHull -- Custom GravHull hooks
 include('sh_codetools.lua')
 GH.HULLS = {} --contains all hull props, used to stop multiple designations
 GH.GHOSTS = {} --contains all hull ghosts, used for garbage collection.
@@ -13,12 +15,12 @@ GH.PHYSGHOSTS = {} --a list of dual-state objects inside or outside a ship
 GH.ROCKETHAX = {} --a list of rockets to hax
 GH.copyValues = {} --PUT VARIOUS ENTITY VARIABLES IN HERE
 hook.Add("Initialize","GravhullTag",function()
-	if !string.find(GetConVarString("sv_tags"),"gravhull") then
-		RunConsoleCommand("sv_tags",GetConVarString("sv_tags") .. ",gravhull")
+	if !string.find(GetConVarString("sv_tags"),"gravhull") then -- If the server doesn't have the gravhull tag
+		RunConsoleCommand("sv_tags",GetConVarString("sv_tags") .. ",gravhull") -- Add it to the server's tags
 	end
 end)
-cvars.AddChangeCallback("ghd_debugoverrides",function()
-	Msg("Gravity Hull Designator - Debug Mode Toggled\nNOTE: Use debug mode if you're getting null entity errors to see where they are coming from. This may lag.")
+cvars.AddChangeCallback("ghd_debugoverrides",function() -- Debug override
+	print("Gravity Hull Designator - Debug Mode Toggled\nNOTE: Use debug mode if you're getting null entity errors to see where they are coming from. This may lag.")
 	GH.DebugOverride = GH.DebugOverrideCV:GetBool()
 	GH.GenSimpleOverrides()
 end)
@@ -27,24 +29,24 @@ end)
 -- Desc: Removes a gravity hull.
 ------------------------------------------------------------------------------------------
 function GH.UnHull(ent)
-	if !GH.SHIPS[ent] then return end
-	for _,e in pairs(GH.SHIPS[ent].Contents) do
-		GH.ShipSpit(ent,e)
+	if !GH.SHIPS[ent] then return end -- If it's not a ship, return
+	for _,e in pairs(GH.SHIPS[ent].Contents) do -- Get all of the ship's contents
+		GH.ShipSpit(ent,e) -- Spit them!
 	end
-	for _,e in pairs(GH.SHIPS[ent].Hull) do
-		GH.HULLS[e] = nil
-		if IsValid(e.Ghost) then
-			e.Ghost:DontDeleteOnRemove(e)
-			e.Ghost:Remove()
+	for _,e in pairs(GH.SHIPS[ent].Hull) do -- Get all of the connected props
+		GH.HULLS[e] = nil -- Set their hull parent to nil
+		if IsValid(e.Ghost) then -- If there's a ghost
+			e.Ghost:DontDeleteOnRemove(e) -- Don't delete the props inside
+			e.Ghost:Remove() -- Remove the ghost
 		end
 	end
 	--take out the trash
-	for _,e in pairs(GH.GHOSTS) do
+	for _,e in pairs(GH.GHOSTS) do -- For the hull's ghost props
 		if IsValid(e) and (!IsValid(e.MyShip) or !GH.SHIPS[e.MyShip]) then
-			e:Remove()
+			e:Remove() -- Remove 
 		end
 	end
-	GH.SHIPS[ent] = nil
+	GH.SHIPS[ent] = nil -- Set the entity's ship to nil
 end
 ------------------------------------------------------------------------------------------
 -- Name: ShipObject
@@ -64,7 +66,7 @@ end
 function GH.ClientGhost(ent,ge,e)
 	GH.ShipObject(ge,true,true,ent,e)
 	if (IsValid(ge)) then
-		ge:RealSetColor(Color(255,255,255,255))
+		ge:RealSetColor(Color(255,255,255,0))
 		ge:RealSetMaterial("models/effects/vol_light001")
 	end
 end
@@ -74,48 +76,48 @@ end
 ------------------------------------------------------------------------------------------
 function GH.GhostSetup(ent,e,ge,pos,nrm)
 	local ang 
-	if !nrm then nrm = Vector(0,0,1) end
-	ge:SetModel(e:GetModel())
+	if !nrm then nrm = Vector(0,0,1) end -- nrm is the "up." If the tool isn't designating up, assume normal gravity.
+	ge:SetModel(e:GetModel()) -- Set the ghost's model
 	e.Ghost = ge
 	if ent == e then
-		ge:SetRealPos(pos)
-		ge:SetAngles(e:AlignAngles(nrm:Angle(),Vector(0,0,1):Angle()))
+		ge:SetRealPos(pos) -- Set its position to nowhere
+		ge:SetAngles(e:AlignAngles(nrm:Angle(),Vector(0,0,1):Angle())) -- Align the ghost so "up" is up
 	else
-		if IsValid(ent.Ghost) then
-			ge:SetRealPos(ent.Ghost:RealLocalToWorld(ent:RealWorldToLocal(e:GetRealPos())))
-			ge:SetAngles(ent.Ghost:RealLocalToWorldAngles(ent:RealWorldToLocalAngles(e:GetRealAngles())))
-		else
+		if IsValid(ent.Ghost) then -- If the ghost is valid
+			ge:SetRealPos(ent.Ghost:RealLocalToWorld(ent:RealWorldToLocal(e:GetRealPos()))) -- Set its position
+			ge:SetAngles(ent.Ghost:RealLocalToWorldAngles(ent:RealWorldToLocalAngles(e:GetRealAngles()))) -- Set its angles
+		else -- Otherwise
 			local gpos,gang = LocalToWorld(e:GetRealPos(),e:GetRealAngles(),ent:GetRealPos(),ent:GetRealAngles())
 			gpos,gang = WorldToLocal(gpos,gang,ent.Ghost:GetRealPos(),ent.Ghost:GetRealAngles())
-			ge:SetRealPos(gpos)
-			ge:SetAngles(gang)
+			ge:SetRealPos(gpos) -- Set position
+			ge:SetAngles(gang) -- Set angles
 		end
 		e:CallOnRemove("GHUpdateHull",GH.UpdateHull,ent)
 	end
-	ge:DeleteOnRemove(e)
-	ge:Spawn()
+	ge:DeleteOnRemove(e) -- If the ghost is deleted, remove the ghost prop
+	ge:Spawn() -- Spawn the prop
 	ge:SetColor(Color(0,0,0,0)) --temp invisibility until the client sees us
-	ge:DrawShadow(false)
-	ge:SetCollisionGroup(e:GetCollisionGroup())
+	ge:DrawShadow(false) -- Disable shadows
+	ge:SetCollisionGroup(e:GetCollisionGroup()) -- Set collision group
 	timer.Simple(0,function() GH.ClientGhost(ent,ge,e) end) --true invisibility
 	local gep = ge:GetPhysicsObject()
-	if gep:IsValid() then 
-		gep:EnableMotion(false)
+	if gep:IsValid() then  -- Get the prop's physics
+		gep:EnableMotion(false) -- Disable motion on the ghost
 		gep:SetMass(50000) --the "solid" effect
 	end
 	if e.IsNotSolid then ge:SetNotSolid(true) end
-	for _,v in pairs(GH.copyValues) do
-		ge[v] = e[v]
+	for _,v in pairs(GH.copyValues) do -- If we need to copy values
+		ge[v] = e[v] -- Copy them
 	end
-	e:DeleteOnRemove(ge)
-	ge.MyShip = ent
+	e:DeleteOnRemove(ge) -- If the prop is deleted, remove the ghost
+	ge.MyShip = ent -- Set the ship
 end
 ------------------------------------------------------------------------------------------
 -- Entity Removal Hooks
 -- Desc: Fixes for removing things, as well as the explosion fix
 ------------------------------------------------------------------------------------------
 hook.Add("EntityRemoved","SLDestroyShip",function(ent)
-	if GH.SHIPS[ent] then GH.UnHull(ent) end
+	if GH.SHIPS[ent] then GH.UnHull(ent) end -- If the ship is removed, remove the hull
 end)
 local explosive_models = kv_swap{
 	"models/props_c17/oildrum001_explosive.mdl",
@@ -133,7 +135,8 @@ local explosive_models = kv_swap{
 hook.Add("EntityRemoved","SLBarrelFix",function(ent)
 xpcall(function()
 	if ent.InShip && ((ent:GetClass() == "prop_physics" && ent:Health() <= 0 && explosive_models[ent:GetModel()]) || ent:GetClass() == "npc_grenade_frag") then
-		net.Start("sl_ship_explosion")
+		-- ^If a barrel or grenade explodes
+		net.Start("sl_ship_explosion") -- Send the data to the client
 			net.WriteVector(ent:GetPos())
 			net.WriteVector(ent:GetRealPos())
 		net.Broadcast()
@@ -147,7 +150,7 @@ end)
 -- Name: ConstrainedEntities
 -- Desc: Get all entities that are actually physically constrained to ent (not nocollide)
 ------------------------------------------------------------------------------------------
-function GH.ConstrainedEntities(ent)
+function GH.ConstrainedEntities(ent) -- (I'll come back to this mess and comment it later)
 	local out = {[ent] = ent}
 	local tbtab = {{ent,1}}
 	if ent.Constraints then
@@ -184,8 +187,8 @@ end
 -- Name: RegisterHull(Entity, Vertical Protrusion Factor, Gravity Percentage)
 -- Desc: Begin designation of a hull-- call UpdateHull(ent) to fill in the rest.
 ------------------------------------------------------------------------------------------
-function GH.RegisterHull(ent,vpf,grav)
-	GravHull.SHIPS[ent] = {Hull = {}, Ghosts = {}, Contents = {}, Parts = {}, FloorDist = vpf, Gravity = grav}
+function GH.RegisterHull(ent,vpf,grav) -- This is called by the tool itself
+	GravHull.SHIPS[ent] = {Hull = {}, Ghosts = {}, Contents = {}, Parts = {}, FloorDist = vpf, Gravity = grav} -- Gets data from tool
 end
 ------------------------------------------------------------------------------------------
 -- Name: UpdateHull
@@ -340,12 +343,10 @@ end
 ------------------------------------------------------------------------------------------
 function GH.FindNowhere(rad)
 	local nowhere = vector_origin
-	--local skycam = ents.FindByClass("sky_camera")[1]
-	--if IsValid(skycam) then skycam = skycam:GetRealPos() else skycam = nil end
 	while !((util.PointContents(nowhere) == CONTENTS_EMPTY or util.PointContents(nowhere) == CONTENTS_TESTFOGVOLUME) and 
 			!util.RealTraceHull{start=nowhere,endpos=nowhere,mins=Vector(1,1,1)*-rad,maxs=Vector(1,1,1)*rad,mask = MASK_SOLID + CONTENTS_WATER}.Hit and --HIT EVERYTHING
-			hook.Call("AllowGhostSpot",nil,nowhere,rad) != false)do--and (!skycam or util.RealTraceLine{start=nowhere,endpos=skycam,mask=MASK_NPCWORLDSTATIC}.Hit)) do
-		nowhere = Vector(math.random(-16384,16384),math.random(-16384,16384),math.random(-16384,16384))
+			hook.Call("AllowGhostSpot",nil,nowhere,rad) != false)do
+		nowhere = Vector(math.random(-16384,16384),math.random(-16384,16384),math.random(-16384,16384)) -- Find somewhere to put the ghost
 	end
 	return nowhere
 end
