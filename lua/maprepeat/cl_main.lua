@@ -55,22 +55,22 @@ net.Receive("maprepeat_cell",function() -- Receive message from server telling u
 end)
 net.Receive("maprepeat_setcell",function() -- Receive message from server telling us about our new cell
 	if !MapRepeat then return end
-	local e = net.ReadInt(16)
-	if IsValid(Entity(e)) then e = Entity(e) end
-	local c = net.ReadString()
-	if type(MapRepeat.CelledEnts[e]) == 'string' then
-		MapRepeat.Cells[MapRepeat.CelledEnts[e]][e] = nil
+	local e = net.ReadInt(16) -- Set e equal to the entity
+	if IsValid(Entity(e)) then e = Entity(e) end -- If it's valid, make sure it's an entity
+	local c = net.ReadString() -- New cell's string
+	if type(MapRepeat.CelledEnts[e]) == 'string' then -- If the entity's type is a string
+		MapRepeat.Cells[MapRepeat.CelledEnts[e]][e] = nil -- Set its cell to nil
 		if IsEntity(e) then
-			MapRepeat.Cells[MapRepeat.CelledEnts[e]][e:EntIndex()] = nil
+			MapRepeat.Cells[MapRepeat.CelledEnts[e]][e:EntIndex()] = nil -- Update cell data
 		end
 	end
-	MapRepeat.Cells[c] = MapRepeat.Cells[c] or {}
-	MapRepeat.Cells[c][e] = true
-	MapRepeat.CelledEnts[e] = c
+	MapRepeat.Cells[c] = MapRepeat.Cells[c] or {} -- Script error prevention
+	MapRepeat.Cells[c][e] = true -- Set the cell to have the entity
+	MapRepeat.CelledEnts[e] = c -- Set the entity to be in the cell
 	if e == LocalPlayer() then
 		local ct = MapRepeat.CellToArray(c)
-		e.Cell = Vector(ct[1],ct[2],ct[3])
-		e.CellStr = c
+		e.Cell = Vector(ct[1],ct[2],ct[3]) -- Set its .Cell value
+		e.CellStr = c -- Set its .CellStr value
 	end
 end)
 function MapRepeat.DrawCell(x,y,z) -- Render the cell on our screen!
@@ -92,12 +92,12 @@ function MapRepeat.DrawCell(x,y,z) -- Render the cell on our screen!
 	end
 	cam.Start3D(RealEyePos()-Vector(x*w,y*h,z*v),RenderAngles()) -- Start rendering
 		local c = (x+pl.Cell.x)..' '..(y+pl.Cell.y)..' '..(z+pl.Cell.z) -- Make it a string
-		if !(MapRepeat.Cells[c] and MapRepeat.Cells[c].gen) then -- If there are no cells and it wants to gen them
-			MapRepeat.GenCell(c) -- Gen them
+		if !(MapRepeat.Cells[c] and MapRepeat.Cells[c].gen) then -- If the cell doesn't exist
+			MapRepeat.GenCell(c) -- Generate it
 		end
 		for k,v in pairs(MapRepeat.Cells[c]) do -- Get all of the cells
 			if tonumber(k) and IsValid(Entity(tonumber(k))) then -- If the entities are valid
-				MapRepeat.Cells[c][Entity(tonumber(k))] = v
+				MapRepeat.Cells[c][Entity(tonumber(k))] = v -- Set the entity's cell
 			end
 			if k == NULL then
 				MapRepeat.Cells[c][k] = nil
@@ -153,17 +153,17 @@ MapRepeat.AddHook("RenderScene","SL_MRScene",function() -- Render everything in 
 		pl.Cell = Vector(0,0,0) 
 		pl.CellStr = "0 0 0"
 	end
-	if !(MapRepeat.Cells[pl.CellStr] and MapRepeat.Cells[pl.CellStr].gen) then
-		MapRepeat.GenCell(pl.CellStr)
+	if !(MapRepeat.Cells[pl.CellStr] and MapRepeat.Cells[pl.CellStr].gen) then -- If the player's cell doesn't exist
+		MapRepeat.GenCell(pl.CellStr) -- Generate it
 	end
-	for _,e in pairs(ents.GetAll()) do -- Find all of the ents (I got lost after this)(???)
-		if !ignored_ents[e:GetClass()] and (e:GetOwner() != LocalPlayer() or e:GetClass() != "physgun_beam") then
-			if !(MapRepeat.CelledEnts[e] or MapRepeat.CelledEnts[e:EntIndex()] or MapRepeat.RGen[e] or MapRepeat.RGen[e:EntIndex()]) then
-				MapRepeat.Cells["0 0 0"][e] = true
-				MapRepeat.CelledEnts[e] = "0 0 0"
-			elseif MapRepeat.CelledEnts[e:EntIndex()] then
+	for _,e in pairs(ents.GetAll()) do -- Find all of the entities
+		if !ignored_ents[e:GetClass()] and (e:GetOwner() != LocalPlayer() or e:GetClass() != "physgun_beam") then -- If it's not to be ignored
+			if !(MapRepeat.CelledEnts[e] or MapRepeat.CelledEnts[e:EntIndex()] or MapRepeat.RGen[e] or MapRepeat.RGen[e:EntIndex()]) then -- If it's not in RGen or CelledEnts
+				MapRepeat.Cells["0 0 0"][e] = true -- Set its cell to 0 0 0
+				MapRepeat.CelledEnts[e] = "0 0 0" -- Set its string cell to "0 0 0"
+			elseif MapRepeat.CelledEnts[e:EntIndex()] then -- If it IS in CelledEnts
 				local old = MapRepeat.CelledEnts[e:EntIndex()]
-				MapRepeat.CelledEnts[e:EntIndex()] = nil
+				MapRepeat.CelledEnts[e:EntIndex()] = nil -- Set its CelledEnts to nil
 				MapRepeat.CelledEnts[e] = old
 			end
 			if MapRepeat.CelledEnts[e] or MapRepeat.RGen[e] or MapRepeat.RGen[e:EntIndex()] then
@@ -237,17 +237,17 @@ MapRepeat.AddHook("ShouldCollide","SL_MRCollideCL",function(e1,e2) -- Should we 
     end
 end)
 MapRepeat.AddHook("PhysgunPickup","SL_MRPickup",function(pl,e)
-	if !(MapRepeat.Cells[pl.CellStr or "0 0 0"][e] or MapRepeat.Cells[pl.CellStr or "0 0 0"][e:EntIndex()]) then return false end
+	if !(MapRepeat.Cells[pl.CellStr or "0 0 0"][e] or MapRepeat.Cells[pl.CellStr or "0 0 0"][e:EntIndex()]) then return false end -- If the entity is not in our cell, don't let us pick it up
 	if MapRepeat.CelledEnts[e] == true then return false end
 end)
 local VEC = FindMetaTable("Vector")
-if !VEC.RealToScreen then VEC.RealToScreen = VEC.ToScreen end -- If the function is broken or disabled, use the usual one
+if !VEC.RealToScreen then VEC.RealToScreen = VEC.ToScreen end -- Stack overflow prevention
 function VEC:ToScreen() -- Overrides Vector:ToScreen()
 	if !MapRepeat then return self:RealToScreen() end
 	local cell,pos = MapRepeat.PosToCell(self)
 	return pos:RealToScreen()
 end
-if !RealEyePos then RealEyePos = EyePos end -- If the function is broken or disabled, use the usual one
+if !RealEyePos then RealEyePos = EyePos end -- Stack overrflow prevention
 function EyePos() -- Overrides EyePos()
 	if !MapRepeat then return RealEyePos() end
 	return MapRepeat.CellToPos(RealEyePos(),LocalPlayer().CellStr)
