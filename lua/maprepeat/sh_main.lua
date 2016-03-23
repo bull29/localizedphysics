@@ -138,7 +138,7 @@ end
 function util.TraceEntity(te,ent)
 	if !MapRepeat then
 		util.TraceEntity = util.RealTraceEntity
-		return util.TraceEntity(te)
+		return util.TraceEntity(te,ent)
 	end
 	
 	cell,te.start,te.endpos = MapRepeat.PosToCell(te.start,te.endpos)
