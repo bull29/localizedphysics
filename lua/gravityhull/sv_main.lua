@@ -53,7 +53,7 @@ end
 -- Desc: Send an object to the client.
 ------------------------------------------------------------------------------------------
 function GH.ShipObject(p,y,h,e,g)
-	net.Start("sl_ship_object")
+	net.Start("sl_ship_object") -- Send the entities that are in the hull to all the clients
 		net.WriteInt(p:EntIndex(),16)
 		net.WriteBool(y)
 		net.WriteBool(h)
@@ -66,8 +66,8 @@ end
 function GH.ClientGhost(ent,ge,e)
 	GH.ShipObject(ge,true,true,ent,e)
 	if (IsValid(ge)) then
-		ge:RealSetColor(Color(255,255,255,0))
-		ge:RealSetMaterial("models/effects/vol_light001")
+		ge:RealSetColor(Color(255,255,255,0)) -- Set the ghost to be invisible
+		ge:RealSetMaterial("models/effects/vol_light001") -- Set the ghost's material to a hard-to-see material
 	end
 end
 ------------------------------------------------------------------------------------------
@@ -150,16 +150,16 @@ end)
 -- Name: ConstrainedEntities
 -- Desc: Get all entities that are actually physically constrained to ent (not nocollide)
 ------------------------------------------------------------------------------------------
-function GH.ConstrainedEntities(ent) -- (I'll come back to this mess and comment it later)
+function GH.ConstrainedEntities(ent)
 	local out = {[ent] = ent}
 	local tbtab = {{ent,1}}
 	if ent.Constraints then
-		while #tbtab > 0 do
-			local bd = tbtab[#tbtab]
-			local bde = bd[1]
-			local bdc = bde.Constraints[bd[2]]
+		while #tbtab > 0 do -- If the tbtab table has data
+			local bd = tbtab[#tbtab] -- Count the table
+			local bde = bd[1] -- Get the first entity
+			local bdc = bde.Constraints[bd[2]] -- Get the constraint
 			local ce
-			if bdc then
+			if bdc then -- If the entity is constrained
 				if bde == bdc.Ent1 then
 					ce = bdc.Ent2
 				else
@@ -197,7 +197,7 @@ end
 function GH.UpdateHull(ent,contraption,gravnormal)
 	if !(IsValid(ent) and GH.SHIPS[ent]) then return end
 	local xcon = GH.ConstrainedEntities(ent) --this is just for the update check
-	local gents = GH.SHIPS[ent].Ghosts
+	local gents = GH.SHIPS[ent].Ghosts -- Get all the ghosts
     local welds = {[ent] = ent}
     local parts = {}
     local tbtab = {{ent,1}}
@@ -207,8 +207,8 @@ function GH.UpdateHull(ent,contraption,gravnormal)
 	--Adds any prop connected solidly to ent as part of its hull,
 	--and any prop connected with a nonsolid constraint to the parts list.
 	--Also adds other constrained hulls as special parts.
-	if ent.Constraints && contraption == 1 then
-		while #tbtab > 0 do
+	if ent.Constraints && contraption == 1 then -- If the tool has contraption enabled and the entity has constraints...
+		while #tbtab > 0 do -- If the table has values
 			local bd = tbtab[#tbtab]
 			local bde = bd[1]
 			local bdc = bde.Constraints[bd[2]]
@@ -428,23 +428,23 @@ function GH.AntiTeleport(p,ppos)
 	net.Send(p)
 end
 local never_eat = kv_swap{
-	"physgun_beam"
+	"physgun_beam" -- DO NOT EAT THE PHYSGUN! IT CAUSES CRASHES!
 }
 function GH.Transition:gmod_hoverball(old,new,oldpos,oldang)
 	self.dt.TargetZ = new:LocalToWorld(old:WorldToLocal(Vector(oldpos.x,oldpos.y,self.dt.TargetZ))).z
 end
-function GH.Transition:rpg_missile()
-	local ply = GH.ROCKETHAX[self] or self:GetOwner()
+function GH.Transition:rpg_missile() -- RPG's aiming is broken with hulls, override it with hax
+	local ply = GH.ROCKETHAX[self] or self:GetOwner() 
 	if IsValid(ply) and (ply.InShip or self.InShip) then
 		GH.ROCKETHAX[self] = ply
-		self:SetOwner(NULL)
+		self:SetOwner(NULL) -- Disable the red-dot aiming
 		self.Attacker = ply
 	else
 		GH.ROCKETHAX[self] = nil
 		self:SetOwner(ply)
 	end
 end
-local function FixMass(p)
+local function FixMass(p) -- Makes it feel like you're holding the ent
 	if p.HeldBone and p.OldMass and p:GetPhysicsObjectNum(p.HeldBone):IsValid() then
 		p:GetPhysicsObjectNum(p.HeldBone):SetMass(p.OldMass)
 		if IsValid(p.SLMyGhost) and p.SLMyGhost:GetPhysicsObjectNum(p.HeldBone):IsValid() then
@@ -470,12 +470,12 @@ function GH.ShipEat(e,p,nm)
 	local oldpos,oldang = p:GetRealPos(),p:GetRealAngles()
 	if (nm!=true) or (e:GetPos() and !e.UsedFakePos) then
 		if p:IsPlayer() then
-			if IsValid(p.Holding) then
-				FixMass(p.Holding)
-				p:Freeze(true)
-				timer.Simple(0.02,function() p:Freeze(false) end)
+			if IsValid(p.Holding) then -- For things that you're holding with a physgun
+				FixMass(p.Holding) -- Make it feel like you're holding it
+				p:Freeze(true) -- Freeze!
+				timer.Simple(0.02,function() p:Freeze(false) end) -- Unfreeze (this fixes a bug)
 				if p.Holding.SLIsGhost then
-					GH.DisablePhysGhost(p.Holding,p.Holding.SLMyGhost)
+					GH.DisablePhysGhost(p.Holding,p.Holding.SLMyGhost) -- Disable phys ghost
 				end
 			end
 			local ppos = g:RealLocalToWorld(e:RealWorldToLocal(p:GetRealPos()+p:OBBCenter()))
@@ -499,7 +499,7 @@ function GH.ShipEat(e,p,nm)
 			p.SLRollFix = true
 			if IsValid(p.RocketHax) then
 				GH.ROCKETHAX[p.RocketHax] = p
-				p.RocketHax:SetOwner(NULL)
+				p.RocketHax:SetOwner(NULL) -- Disables rocket aiming
 				p.RocketHax.Attacker = ply
 			end
 		elseif p:IsNPC() then
