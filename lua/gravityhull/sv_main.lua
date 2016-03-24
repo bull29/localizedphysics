@@ -1343,6 +1343,7 @@ xpcall(function()
 		end
 	end
 end,ErrorNoHalt)
+	if !out then return end
 	return out
 end)
 ------------------------------------------------------------------------------------------
