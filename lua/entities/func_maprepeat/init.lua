@@ -40,7 +40,7 @@ local function MR_Touch(self,ent)
 				end
 			end
 			ent.SkipStart = true -- Ignore touch
-			ent:SetRealPos(p) -- Set the position
+			if ent:IsVehicle() then	ent:RealVSetPos(p) else	ent:SetRealPos(p) end -- Set the position
 			for i=1,ent:GetPhysicsObjectCount() do -- Find the number of the physics objects 
 				local po = ent:GetPhysicsObjectNum(i-1) -- Get the physics object number
 				if po:IsValid() then
