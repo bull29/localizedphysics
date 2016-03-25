@@ -188,7 +188,10 @@ if !RealCleanUpMap then
 	RealCleanUpMap = game.CleanUpMap
 end
 function game.CleanUpMap(send, filters)
-	if !MapRepeat then return game.CleanUpMap(send,filters)end
+	if !MapRepeat then 
+		game.CleanUpMap = RealCleanUpMap
+		return game.CleanUpMap(send,filters)
+	end
 	if type(filters) != 'table' then filters = {filters} end
 	if !table.HasValue(filters,"func_brush") then filters[#filters+1] = "func_brush" end
 	return RealCleanUpMap(send, filters)
