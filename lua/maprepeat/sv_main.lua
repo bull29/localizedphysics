@@ -317,3 +317,17 @@ function PHYS:GetPos() -- Overrides GetPos
 	end
 	return self:RealGetPos() -- Return the output without causing stack overflow
 end
+
+local VHC = FindMetaTable("Vehicle")
+if !VHC.RealVSetPos then
+	VHC.RealVSetPos = VHC.SetPos
+end
+function VHC:SetPos(pos)
+	if !MapRepeat or MapRepeat.PosWrap > 0 then
+		if !MapRepeat then VHC.SetPos = VHC.RealVSetPos end
+		return self:RealVSetPos(pos)
+	end
+	local cell,tpos = MapRepeat.PosToCell(pos)
+	MapRepeat.SetCell(self,cell)
+	return self:RealVSetPos(tpos)
+end
