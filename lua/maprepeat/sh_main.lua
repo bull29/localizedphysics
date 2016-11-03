@@ -184,6 +184,29 @@ function util.TraceHull(th)
 	return tho
 end
 
+if !util.RealQuickTrace then
+	util.RealQuickTrace = util.QuickTrace
+end
+function util.QuickTrace(origin,dir,filter)
+	if !MapRepeat then
+		util.QuickTrace = util.RealQuickTrace
+		return util.QuickTrace(origin,dir,filter)
+	end
+
+	cell = MapRepeat.PosToCell(origin,dir*2147483647)
+	local nfilter = {}
+	
+	for _,e in pairs(ents.GetAll()) do
+		if !MapRepeat.InCell(e,cell) then
+			nfilter[#nfilter+1] = e
+		end
+	end	
+
+	local qto = util.RealQuickTrace(origin,dir,nfilter)
+	
+	return qto
+end
+
 if !RealCleanUpMap then
 	RealCleanUpMap = game.CleanUpMap
 end
