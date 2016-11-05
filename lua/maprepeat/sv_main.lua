@@ -222,7 +222,39 @@ hook.Add("InitPostEntity","MR_IPE",function() -- After entities are created
 			net.Start("maprepeat_uninstall"); net.Send(ply); -- Tell them to uninstall as well
 		end)
 	else
-		MapRepeat.GenCell("0 0 0") -- Otherwise, generate the starting cell.
+		MapRepeat.GenCell("0 0 0") -- Otherwise, generate the starting cells.
+		--sides
+		MapRepeat.GenCell("-1 0 0") 
+		MapRepeat.GenCell("1 0 0") 
+		MapRepeat.GenCell("0 -1 0") 
+		MapRepeat.GenCell("0 1 0") 
+		MapRepeat.GenCell("0 0 1") 
+		MapRepeat.GenCell("0 0 -1") 
+		--2D corners (XY)
+		MapRepeat.GenCell("-1 -1 0") 
+		MapRepeat.GenCell("1 -1 0") 
+		MapRepeat.GenCell("-1 1 0") 
+		MapRepeat.GenCell("1 1 0") 
+		--2D corners (XZ)
+		MapRepeat.GenCell("-1 0 -1") 
+		MapRepeat.GenCell("1 0 -1") 
+		MapRepeat.GenCell("-1 0 1") 
+		MapRepeat.GenCell("1 0 1") 
+		--2D corners (YZ)
+		MapRepeat.GenCell("0 -1 -1") 
+		MapRepeat.GenCell("0 1 -1") 
+		MapRepeat.GenCell("0 -1 1") 
+		MapRepeat.GenCell("0 1 1") 
+		--3D corners (+Z)
+		MapRepeat.GenCell("-1 -1 1") 
+		MapRepeat.GenCell("1 -1 1") 
+		MapRepeat.GenCell("-1 1 1") 
+		MapRepeat.GenCell("1 1 1") 
+		--3D corners (-Z)
+		MapRepeat.GenCell("-1 -1 -1") 
+		MapRepeat.GenCell("1 -1 -1") 
+		MapRepeat.GenCell("-1 1 -1") 
+		MapRepeat.GenCell("1 1 -1") 
 	end
 end)
 MapRepeat.AddHook("PlayerSpawn","DR_MPDeath",function(ply) -- Death hook
