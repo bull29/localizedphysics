@@ -275,7 +275,7 @@ hook.Add("EntityKeyValue","MR_KVH",function(ent,k,v) -- Gets values inputted int
 	if string.sub(k,1,4) == 'cell' then -- If the keyvalue is cell (like cell1)
 		local i = string.sub(k,5) -- i is the number at the end of the name, such as cell1, cell2
 		
-		if string.find(c,'?') or string.find(c,'%%') then -- If ? or chance
+		if string.find(v,'?') or string.find(v,'%%') then -- If ? or chance
 			if tonumber(split[1]) != nil then c1 = tonumber(split[1])+reference[1] else c1 = split[1] end
 			if tonumber(split[2]) != nil then c2 = tonumber(split[2])+reference[2] else c2 = split[2] end
 			if tonumber(split[3]) != nil then c3 = tonumber(split[3])+reference[3] else c3 = split[3] end
@@ -291,17 +291,12 @@ hook.Add("EntityKeyValue","MR_KVH",function(ent,k,v) -- Gets values inputted int
 		end
 	end
 	-- More space stuff!
-	if string.sub(k,1,7) == 'space' then -- If it finds the keyvalue space
+	if k == 'space' then -- If it finds the keyvalue space
 		if(v != 0 and v) then
 			SPACE = v -- Global var space is the value!
 		end
 	end
 	--
-	if string.sub(k,1,8) == 'chance' then
-		if (v and string.sub(v,1,1)=='%') then
-		-- Coming soon!
-		end
-	end
 	if #rep > 0 then -- If there are ? or % entities
 		MapRepeat.SetRGen(ent,rep) -- Run RGen on them
 	end
