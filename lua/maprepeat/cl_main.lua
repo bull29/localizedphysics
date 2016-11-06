@@ -74,17 +74,13 @@ net.Receive("maprepeat_setcell",function() -- Receive message from server tellin
 	end
 end)
 function MapRepeat.DrawCell(x,y,z) -- Render the cell on our screen!
+	local Allowed = {'Entity','Vehicle','Player','Weapon'}
 	local s = MapRepeat.Sync
 	local l,r,t,b,u,d = s.left, s.right, s.top, s.bottom, s.up, s.down
 	local w = (r or 0) - (l or 0)
 	local h = (b or 0) - (t or 0)
 	local v = (u or 0) - (d or 0)
-	if s.tilemap == 1 then -- Coming soon(???)
-		local e = Entity(0)
-		e:SetRenderOrigin(Vector(x*w,y*h,z*v))
-		e:DrawModel()
-		--e:SetRenderOrigin(vector_origin)
-	end
+	
 	local pl = LocalPlayer() -- The client!
 	if !pl.Cell then 
 		pl.Cell = Vector(0,0,0) 
@@ -108,7 +104,7 @@ function MapRepeat.DrawCell(x,y,z) -- Render the cell on our screen!
 				MapRepeat.Cells[c][k] = nil
 				k = Entity(k)
 			end
-			if type(k) == 'Entity' and IsValid(k) and v then
+			if table.HasValue(Allowed,type(k)) and IsValid(k) and v then
 				(k.Draw or k.DrawModel)(k)
 				if k.MRNoDraw then
 					k:SetNoDraw(false)
