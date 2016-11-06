@@ -180,51 +180,126 @@ MapRepeat.AddHook("RenderScene","SL_MRScene",function() -- Render everything in 
 end)
 MapRepeat.AddHook("PostDrawOpaqueRenderables","SL_MRDraw",function() -- Render the cells around 0 0 0
 	local s = MapRepeat.Sync
-	if (tonumber(s.cube) or 0) > 0 then
-		for x = -s.cube,s.cube do
-			for y = -s.cube,s.cube do
-				for z = -s.cube,s.cube do
-					if !(x == 0 && y == 0 && z == 0) then
-						MapRepeat.DrawCell(x,y,z)
-					end
-				end
-			end
-		end
-		return
-	end
-	local l,r,t,b,u,d = s.left, s.right, s.top, s.bottom, s.up, s.down
+	local l,r,f,b,u,d = s.left, s.right, s.top, s.bottom, s.up, s.down
+	local left,right,front,back,up,down
 	--sides
-	if l then MapRepeat.DrawCell(-1,0,0) end
-	if r then MapRepeat.DrawCell(1,0,0) end
-	if t then MapRepeat.DrawCell(0,-1,0) end
-	if b then MapRepeat.DrawCell(0,1,0) end
-	if u then MapRepeat.DrawCell(0,0,1) end
-	if d then MapRepeat.DrawCell(0,0,-1) end
+	if l then 
+		left = math.floor(16384/math.abs(l))
+		for i=1,left do MapRepeat.DrawCell(0,-i,0) 
+	end end
+	if r then 
+		right = math.floor(16384/math.abs(r))
+		for i=1,right do MapRepeat.DrawCell(0,i,0) 
+	end end
+	if f then 
+		front = math.floor(16384/math.abs(f))
+		for i=1,front do MapRepeat.DrawCell(i,0,0) 
+	end end
+	if b then 
+		back = math.floor(16384/math.abs(b))
+		for i=1,back do MapRepeat.DrawCell(-i,0,0) 
+	end end
+	if u then 
+		up = math.floor(16384/math.abs(u))
+		for i=1,up do MapRepeat.DrawCell(0,0,i) 
+	end end
+	if d then 
+		down = math.floor(16384/math.abs(d))
+		for i=1,down do MapRepeat.DrawCell(i,0,-1) 
+	end end
 	--2D corners (XY)
-	if l and t then MapRepeat.DrawCell(-1,-1,0) end
-	if r and t then MapRepeat.DrawCell(1,-1,0) end
-	if l and b then MapRepeat.DrawCell(-1,1,0) end
-	if r and b then MapRepeat.DrawCell(1,1,0) end
+	if l and f then 
+		for i=1,left do MapRepeat.DrawCell(1,-i,0) end 
+		for i=1,front do MapRepeat.DrawCell(i,-1,0) end 
+	end
+	if r and f then 
+		for i=1,right do MapRepeat.DrawCell(1,i,0) end 
+		for i=1,front do MapRepeat.DrawCell(i,1,0) end 
+	end
+	if l and b then 
+		for i=1,left do MapRepeat.DrawCell(-1,-i,0) end 
+		for i=1,back do MapRepeat.DrawCell(i,-1,0) end 
+	end
+	if r and b then 
+		for i=1,right do MapRepeat.DrawCell(-1,i,0) end 
+		for i=1,back do  MapRepeat.DrawCell(-i,1,0) end 
+	end
 	--2D corners (XZ)
-	if l and d then MapRepeat.DrawCell(-1,0,-1) end
-	if r and d then MapRepeat.DrawCell(1,0,-1) end
-	if l and u then MapRepeat.DrawCell(-1,0,1) end
-	if r and u then MapRepeat.DrawCell(1,0,1) end
+	if b and d then 
+		for i=1,back do MapRepeat.DrawCell(-b,0,-1) end
+		for i=1,down do MapRepeat.DrawCell(-1,0,-i) end
+	end
+	if f and d then 
+		for i=1,front do MapRepeat.DrawCell(i,0,-1) end
+		for i=1,down do MapRepeat.DrawCell(1,0,-i) end
+	end
+	if b and u then 
+		for i=1,back do MapRepeat.DrawCell(-i,0,1) end
+		for i=1,up do MapRepeat.DrawCell(-1,0,i) end
+	end
+	if f and u then 
+		for i=1,front do MapRepeat.DrawCell(i,0,1) end
+		for i=1,up do MapRepeat.DrawCell(1,0,i) end
+	end
 	--2D corners (YZ)
-	if l and d then MapRepeat.DrawCell(0,-1,-1) end
-	if r and d then MapRepeat.DrawCell(0,1,-1) end
-	if l and u then MapRepeat.DrawCell(0,-1,1) end
-	if r and u then MapRepeat.DrawCell(0,1,1) end
+	if l and d then 
+		for i=1,left do MapRepeat.DrawCell(0,-i,-1) end
+		for i=1,down do MapRepeat.DrawCell(0,-1,-i) end
+	end
+	if r and d then 
+		for i=1,right do MapRepeat.DrawCell(0,i,-1) end
+		for i=1,down do MapRepeat.DrawCell(0,1,-i) end
+	end
+	if l and u then 
+		for i=1,left do MapRepeat.DrawCell(0,-i,1) end
+		for i=1,up do MapRepeat.DrawCell(0,-1,i) end
+	end
+	if r and u then 
+		for i=1,right do MapRepeat.DrawCell(0,i,1) end
+		for i=1,up do MapRepeat.DrawCell(0,1,i) end 
+	end
 	--3D corners (+Z)
-	if l and t and u then MapRepeat.DrawCell(-1,-1,1) end
-	if r and t and u then MapRepeat.DrawCell(1,-1,1) end
-	if l and b and u then MapRepeat.DrawCell(-1,1,1) end
-	if r and b and u then MapRepeat.DrawCell(1,1,1) end
+	if l and f and u then 
+		for i=1,left do MapRepeat.DrawCell(1,-i,1) end
+		for i=1,front do MapRepeat.DrawCell(i,-1,1) end
+		for i=1,up do MapRepeat.DrawCell(1,-1,i) end
+	end
+	if r and f and u then 
+		for i=1,right do MapRepeat.DrawCell(1,i,1) end
+		for i=1,front do MapRepeat.DrawCell(i,1,1) end
+		for i=1,up do MapRepeat.DrawCell(1,1,i) end
+	end
+	if l and b and u then 
+		for i=1,left do MapRepeat.DrawCell(-1,-i,1) end
+		for i=1,back do MapRepeat.DrawCell(-i,-1,1) end
+		for i=1,up do MapRepeat.DrawCell(-1,-1,i) end
+	end
+	if r and b and u then 
+		for i=1,right do MapRepeat.DrawCell(-1,i,1) end
+		for i=1,back do MapRepeat.DrawCell(-i,1,1) end
+		for i=1,up do MapRepeat.DrawCell(-1,1,i) end
+	end
 	--3D corners (-Z)
-	if l and t and d then MapRepeat.DrawCell(-1,-1,-1) end
-	if r and t and d then MapRepeat.DrawCell(1,-1,-1) end
-	if l and b and d then MapRepeat.DrawCell(-1,1,-1) end
-	if r and b and d then MapRepeat.DrawCell(1,1,-1) end
+	if l and f and d then 
+		for i=1,left do MapRepeat.DrawCell(1,-i,-1) end
+		for i=1,front do MapRepeat.DrawCell(i,-1,-1) end
+		for i=1,down do MapRepeat.DrawCell(1,-1,-i) end
+	end
+	if r and f and d then 
+		for i=1,right do MapRepeat.DrawCell(1,i,-1) end
+		for i=1,front do MapRepeat.DrawCell(i,1,-1) end
+		for i=1,down do MapRepeat.DrawCell(1,1,-i)  end
+	end
+	if l and b and d then 
+		for i=1,left do MapRepeat.DrawCell(-1,-i,-1) end
+		for i=1,back do MapRepeat.DrawCell(-i,-1,-1) end
+		for i=1,down do MapRepeat.DrawCell(-1,-1,-i) end
+	end
+	if r and b and d then 
+		for i=1,right do MapRepeat.DrawCell(-1,i,-1) end
+		for i=1,back do MapRepeat.DrawCell(-i,1,-1) end
+		for i=1,down do MapRepeat.DrawCell(-1,1,-i) end
+	end
 end)
 MapRepeat.AddHook("ShouldCollide","SL_MRCollideCL",function(e1,e2) -- Should we collide with this ent?
 	if GravHull.SHIPCONTENTS[LocalPlayer()] then return end -- If we're in a Grav Hull, then no
