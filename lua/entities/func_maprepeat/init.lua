@@ -40,6 +40,16 @@ local function MR_Touch(self,ent)
 				end
 			end
 			ent.SkipStart = true -- Ignore touch
+			
+			local children = ent:GetChildren()
+			if(table.Count(children) > 0) then
+				for i=1,table.Count(children) do
+					if children[i]:IsValid() then
+						children[i].SkipStart = true
+					end
+				end
+			end
+			
 			if ent:IsVehicle() then	ent:RealVSetPos(p) else	ent:SetRealPos(p) end -- Set the position
 			for i=1,ent:GetPhysicsObjectCount() do -- Find the number of the physics objects 
 				local po = ent:GetPhysicsObjectNum(i-1) -- Get the physics object number
@@ -57,6 +67,11 @@ local function MR_Touch(self,ent)
 			ct[i] = ct[i] + (self.In > self.Out and 1 or -1) -- Find which way we're going and add it to the table.
 			local ctc = ct[1]..' '..ct[2]..' '..ct[3] -- Find x y and z of the cell
 			MapRepeat.SetCell(ent,ctc) -- Set the cell
+			
+			for i=1,table.Count(ent:GetChildren()) do
+				MapRepeat.SetCell(ent:GetChildren()[i],ctc)
+			end
+			
 			print("new cell: "..ctc) -- Print new cell
 			if(ent:IsPlayer()) then -- If it's a player changing cells
 				for _,wep in pairs(ent:GetWeapons()) do -- Find their weapons
