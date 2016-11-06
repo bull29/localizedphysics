@@ -263,14 +263,30 @@ MapRepeat.AddHook("PlayerSpawn","DR_MPDeath",function(ply) -- Death hook
 	end
 end)
 hook.Add("EntityKeyValue","MR_KVH",function(ent,k,v) -- Gets values inputted into entities
-	local rep = {} -- Create a blank table
+	local rep,split = {},{} -- Create a blank table
+	local reference = {0,0,0}
+	local c1,c2,c3 = 0,0,0
+		
+	local s = string.Explode(" ",v) -- Find the spaces in between the numbers we want
+	if table.Count(s) > 0 then split = table.Copy(s) else split = {0,0,0} end
+	if k == 'ref' then
+		reference = {split[1],split[2],split[3]}
+	end
 	if string.sub(k,1,4) == 'cell' then -- If the keyvalue is cell (like cell1)
 		local i = string.sub(k,5) -- i is the number at the end of the name, such as cell1, cell2
-		local c = v -- c variable is the value, such as 0 0 0
+		
 		if string.find(c,'?') or string.find(c,'%%') then -- If ? or chance
+			if tonumber(split[1]) != nil then c1 = tonumber(split[1])+reference[1] else c1 = split[1] end
+			if tonumber(split[2]) != nil then c2 = tonumber(split[2])+reference[2] else c2 = split[2] end
+			if tonumber(split[3]) != nil then c3 = tonumber(split[3])+reference[3] else c3 = split[3] end
+			local c = tostring(c1.." "..c2.." "..c3)
 			local ct = MapRepeat.CellToArray(c) -- Get the values from the cell
 			rep[#rep+1] = ct -- Add it to the table
 		else
+			local c1 = tonumber(split[1])+reference[1]
+			local c2 = tonumber(split[2])+reference[2]
+			local c3 = tonumber(split[3])+reference[3]
+			c = tostring(c1.." "..c2.." "..c3) 
 			MapRepeat.AddCell(ent,c) -- Otherwise, add the cells normally
 		end
 	end
