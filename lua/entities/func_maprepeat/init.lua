@@ -14,6 +14,7 @@ function ENT:Initialize()
 end
 
 local function MR_Touch(self,ent)
+	local children = {}
 	if ent:GetMoveType() != MOVETYPE_NONE && ent:GetMoveType() != MOVETYPE_PUSH then
 		local p = ent:GetRealPos() -- Find old position
 		print("old real pos: " .. tostring(p)) -- Print old position
@@ -41,7 +42,7 @@ local function MR_Touch(self,ent)
 			end
 			ent.SkipStart = true -- Ignore touch
 			
-			local children = ent:GetChildren()
+			children = ent:GetChildren()
 			if(table.Count(children) > 0) then
 				for i=1,table.Count(children) do
 					if children[i]:IsValid() then
@@ -68,8 +69,15 @@ local function MR_Touch(self,ent)
 			local ctc = ct[1]..' '..ct[2]..' '..ct[3] -- Find x y and z of the cell
 			MapRepeat.SetCell(ent,ctc) -- Set the cell
 			
-			for i=1,table.Count(ent:GetChildren()) do
-				MapRepeat.SetCell(ent:GetChildren()[i],ctc)
+			if(table.Count(children)>0) then
+				for i=1,table.Count(children) do
+					MapRepeat.SetCell(children[i],ctc) -- Set the cell of the entity's children
+					
+					if children[i]:IsVehicle() and children[i]:GetDriver() != NULL then -- If one of the children is a vehicle with a driver			
+						children[i]:GetDriver().SkipStart = true -- Set the driver to skip teleport		
+						MapRepeat.SetCell(children[i]:GetDriver(),ctc) -- Set the driver's cell		
+					end		
+				end
 			end
 			
 			print("new cell: "..ctc) -- Print new cell
