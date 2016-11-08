@@ -201,7 +201,7 @@ MapRepeat.AddHook("PostDrawOpaqueRenderables","SL_MRDraw",function() -- Render t
 	end end
 	if d then 
 		down = math.floor(16384/math.abs(d))
-		for i=1,down do MapRepeat.DrawCell(i,0,-1) 
+		for i=1,down do MapRepeat.DrawCell(0,0,-i) 
 	end end
 	--2D corners (XY)
 	if l and f then 
