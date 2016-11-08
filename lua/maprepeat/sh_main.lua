@@ -193,7 +193,7 @@ function util.QuickTrace(origin,dir,filter) -- Override for QuickTrace
 		return util.QuickTrace(origin,dir,filter) -- Perform normal QuickTrace
 	end
 
-	cell = MapRepeat.PosToCell(origin,dir) -- Find cell the QuickTrace is in 
+	cell = MapRepeat.PosToCell(origin,dir*2147483647) -- Find cell the QuickTrace is in 
 	local nfilter = {} -- Make a new filter
 	
 	for _,e in pairs(ents.GetAll()) do -- Get all entities
