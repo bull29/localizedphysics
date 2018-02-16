@@ -1,7 +1,10 @@
 include("gravityhull/init.lua")
-include("maprepeat/init.lua")
+
+local AllowMapRepeat = true
+if AllowMapRepeat then include("maprepeat/init.lua") end
+
 if SERVER then
 	AddCSLuaFile("gravityhull/init.lua")
-	AddCSLuaFile("maprepeat/init.lua")
 	AddCSLuaFile("autorun/gravityhull_init.lua")
+	if AllowMapRepeat then AddCSLuaFile("maprepeat/init.lua") end
 end
