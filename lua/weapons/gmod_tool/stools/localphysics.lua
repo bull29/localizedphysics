@@ -70,6 +70,7 @@ function TOOL:RightClick(tr)
 	GravHull.UnHull(ent)
 	return true
 end
+--[[ Shitty way of doing halos. Please improve. -Bull
 function TOOL:Reload(tr)
 	//idk this is for later
 end
@@ -77,7 +78,6 @@ function TOOL:Think(tr)
 <<<<<<< HEAD
 
 end
---[[ Shitty way of doing halos. Please improve. -Bull
 local gravhulldEntities = {}
 
 net.Receive( "broadcastEntityAdded", function()
@@ -112,8 +112,9 @@ function isGravHalo() -- Can't call this in Tool:Think, else rip frames
 end
 end
 hook.Remove("PreDrawHalos","gravhalo")
-]]
+
 =======
 	//idk this is for later
 end
 >>>>>>> origin/master
+]]
